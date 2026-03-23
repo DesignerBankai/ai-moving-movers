@@ -140,8 +140,8 @@ const InlineInput: React.FC<{
   placeholder?: string;
   type?: string;
 }> = ({ label, value, onChange, placeholder, type }) => (
-  <div style={{ marginBottom: 10 } as any}>
-    <span style={{ fontFamily: F, fontSize: 11, fontWeight: 600, color: colors.gray[500], display: 'block', marginBottom: 3 } as any}>
+  <div style={{ marginBottom: 12 } as any}>
+    <span style={{ fontFamily: F, fontSize: 12, fontWeight: 600, color: colors.gray[500], display: 'block', marginBottom: 5 } as any}>
       {label}
     </span>
     <input
@@ -150,10 +150,10 @@ const InlineInput: React.FC<{
       onChange={(e: any) => onChange(e.target.value)}
       placeholder={placeholder || ''}
       style={{
-        width: '100%', padding: '10px 12px', borderRadius: 10,
-        border: 'none', fontFamily: F, fontSize: 14,
+        width: '100%', padding: '12px 14px', borderRadius: 12,
+        border: 'none', fontFamily: F, fontSize: 15,
         color: colors.gray[900], outline: 'none', backgroundColor: '#F0F1F3',
-        boxSizing: 'border-box',
+        boxSizing: 'border-box', minHeight: 44,
       } as any}
     />
   </div>
@@ -302,6 +302,15 @@ const CollapsibleSection: React.FC<{
   children: React.ReactNode;
 }> = ({ title, icon, badge, defaultOpen = false, children }) => {
   const [open, setOpen] = useState(defaultOpen);
+  const contentRef = useRef<HTMLDivElement>(null);
+  const [contentHeight, setContentHeight] = useState(0);
+
+  useEffect(() => {
+    if (contentRef.current) {
+      setContentHeight(contentRef.current.scrollHeight);
+    }
+  }, [open, contentRef.current?.scrollHeight]);
+
   return (
     <div style={{
       marginBottom: 12, borderRadius: 16,
@@ -310,20 +319,13 @@ const CollapsibleSection: React.FC<{
       <div
         onClick={() => setOpen(!open)}
         style={{
-          display: 'flex', alignItems: 'center', padding: '16px 20px',
+          display: 'flex', alignItems: 'center', padding: '14px 20px',
           cursor: 'pointer',
           backgroundColor: open ? colors.primary[50] : '#F0F1F3',
-          gap: 10, minHeight: 56, userSelect: 'none',
+          gap: 10, minHeight: 48, userSelect: 'none',
         } as any}
       >
-        <div style={{
-          width: 36, height: 36, borderRadius: 10,
-          backgroundColor: open ? colors.primary[100] : '#FFFFFF',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          flexShrink: 0,
-        } as any}>
-          {icon}
-        </div>
+        {icon}
         <span style={{ fontFamily: F, fontSize: 16, fontWeight: 700, color: colors.gray[800], flex: 1 } as any}>
           {title}
         </span>
@@ -334,22 +336,29 @@ const CollapsibleSection: React.FC<{
             padding: '4px 10px', borderRadius: 10,
           } as any}>{badge}</span>
         )}
-        <div style={{
-          width: 32, height: 32, borderRadius: 8,
-          backgroundColor: open ? colors.primary[100] : '#FFFFFF',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          flexShrink: 0,
-        } as any}>
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-            <path d={open ? "M6 15L12 9L18 15" : "M6 9L12 15L18 9"} stroke={open ? colors.primary[600] : colors.gray[400]} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
-          </svg>
-        </div>
+        <svg
+          width="18" height="18" viewBox="0 0 24 24" fill="none"
+          style={{
+            transition: 'transform 0.25s ease',
+            transform: open ? 'rotate(180deg)' : 'rotate(0deg)',
+            flexShrink: 0,
+          } as any}
+        >
+          <path d="M6 9L12 15L18 9" stroke={open ? colors.primary[600] : colors.gray[400]} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
+        </svg>
       </div>
-      {open && (
+      <div
+        ref={contentRef}
+        style={{
+          maxHeight: open ? contentHeight || 2000 : 0,
+          overflow: 'hidden',
+          transition: 'max-height 0.3s ease',
+        } as any}
+      >
         <div style={{ padding: '16px 20px' } as any}>
           {children}
         </div>
-      )}
+      </div>
     </div>
   );
 };
@@ -583,8 +592,8 @@ export const ContractSigningScreen: React.FC<ContractSigningScreenProps> = ({
                   onClick={() => setEditingClient(true)}
                   style={{
                     display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
-                    padding: '12px 16px', borderRadius: 12, backgroundColor: colors.primary[50],
-                    cursor: 'pointer', minHeight: 44, width: '100%', boxSizing: 'border-box',
+                    padding: '10px 16px', borderRadius: 12, backgroundColor: colors.primary[50],
+                    cursor: 'pointer', minHeight: 40, width: '100%', boxSizing: 'border-box',
                   } as any}
                 >
                   <EditPenIcon />
@@ -601,12 +610,12 @@ export const ContractSigningScreen: React.FC<ContractSigningScreenProps> = ({
                   onClick={() => setEditingClient(false)}
                   style={{
                     display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
-                    padding: '12px 16px', borderRadius: 12, backgroundColor: colors.primary[500],
-                    cursor: 'pointer', marginTop: 8, minHeight: 44, width: '100%',
+                    padding: '10px 16px', borderRadius: 12, backgroundColor: colors.primary[500],
+                    cursor: 'pointer', marginTop: 8, minHeight: 40, width: '100%',
                     boxSizing: 'border-box',
                   } as any}
                 >
-                  <span style={{ fontFamily: F, fontSize: 15, fontWeight: 700, color: '#FFFFFF' } as any}>Save Changes</span>
+                  <span style={{ fontFamily: F, fontSize: 14, fontWeight: 700, color: '#FFFFFF' } as any}>Save Changes</span>
                 </div>
               </div>
             )}
@@ -713,13 +722,13 @@ export const ContractSigningScreen: React.FC<ContractSigningScreenProps> = ({
                 onClick={() => setShowAddModal(true)}
                 style={{
                   display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
-                  padding: '12px 0', borderRadius: 12, backgroundColor: colors.primary[500],
-                  cursor: 'pointer', marginTop: 10, minHeight: 44, width: '100%',
+                  padding: '10px 0', borderRadius: 12, backgroundColor: colors.primary[500],
+                  cursor: 'pointer', marginTop: 10, minHeight: 40, width: '100%',
                   boxSizing: 'border-box',
                 } as any}
               >
                 <PlusIcon />
-                <span style={{ fontFamily: F, fontSize: 15, fontWeight: 700, color: '#FFFFFF' } as any}>
+                <span style={{ fontFamily: F, fontSize: 14, fontWeight: 700, color: '#FFFFFF' } as any}>
                   Add Item or Service
                 </span>
               </div>
@@ -799,21 +808,21 @@ export const ContractSigningScreen: React.FC<ContractSigningScreenProps> = ({
                     onClick={() => { setShowAddModal(false); setAddName(''); setAddPrice(''); setAddRoom(''); setAddQty('1'); setAddSize(''); setAddDescription(''); }}
                     style={{
                       flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      padding: '12px 0', borderRadius: 12, cursor: 'pointer', minHeight: 44,
+                      padding: '10px 0', borderRadius: 12, cursor: 'pointer', minHeight: 40,
                       backgroundColor: '#F0F1F3',
                     } as any}
                   >
-                    <span style={{ fontFamily: F, fontSize: 15, fontWeight: 600, color: colors.gray[600] } as any}>Cancel</span>
+                    <span style={{ fontFamily: F, fontSize: 14, fontWeight: 600, color: colors.gray[600] } as any}>Cancel</span>
                   </div>
                   <div
                     onClick={addAdditionalItem}
                     style={{
                       flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      padding: '12px 0', borderRadius: 12, cursor: 'pointer', minHeight: 44,
+                      padding: '10px 0', borderRadius: 12, cursor: 'pointer', minHeight: 40,
                       backgroundColor: addName.trim() ? colors.primary[500] : colors.gray[200],
                     } as any}
                   >
-                    <span style={{ fontFamily: F, fontSize: 15, fontWeight: 700, color: addName.trim() ? '#FFFFFF' : colors.gray[400] } as any}>Add</span>
+                    <span style={{ fontFamily: F, fontSize: 14, fontWeight: 700, color: addName.trim() ? '#FFFFFF' : colors.gray[400] } as any}>Add</span>
                   </div>
                 </div>
               </div>
