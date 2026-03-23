@@ -362,19 +362,24 @@ const DetailScreen: React.FC<{
 }> = ({ metric, onBack }) => {
   const config = METRIC_CONFIG[metric];
   const data = DRILL_DOWN_DATA[metric];
-  const [filterPeriod, setFilterPeriod] = useState<'7d' | '30d' | '90d'>('7d');
+  const [filterPeriod, setFilterPeriod] = useState<'7d' | '30d' | '90d' | 'custom'>('7d');
+  const [showCustomPicker, setShowCustomPicker] = useState(false);
+  const [customFrom, setCustomFrom] = useState('2026-03-01');
+  const [customTo, setCustomTo] = useState('2026-03-23');
 
+  const fp = filterPeriod === 'custom' ? '30d' : filterPeriod; // custom falls back to 30d data
   const summaryValue =
-    metric === 'orders' ? (filterPeriod === '7d' ? '42' : filterPeriod === '30d' ? '186' : '524') :
-    metric === 'revenue' ? (filterPeriod === '7d' ? '$23,100' : filterPeriod === '30d' ? '$124,800' : '$348,600') :
-    metric === 'rating' ? (filterPeriod === '7d' ? '4.87' : filterPeriod === '30d' ? '4.82' : '4.79') :
-    metric === 'conversion' ? (filterPeriod === '7d' ? '68%' : filterPeriod === '30d' ? '64%' : '61%') :
-    metric === 'avgCheck' ? (filterPeriod === '7d' ? '$550' : filterPeriod === '30d' ? '$670' : '$665') :
-    metric === 'onTime' ? (filterPeriod === '7d' ? '96%' : filterPeriod === '30d' ? '94%' : '93%') :
-    metric === 'cancellation' ? (filterPeriod === '7d' ? '2.1%' : filterPeriod === '30d' ? '3.2%' : '3.5%') :
-    (filterPeriod === '7d' ? '3.8h' : filterPeriod === '30d' ? '4.2h' : '4.0h');
+    metric === 'orders' ? (fp === '7d' ? '42' : fp === '30d' ? '186' : '524') :
+    metric === 'revenue' ? (fp === '7d' ? '$23,100' : fp === '30d' ? '$124,800' : '$348,600') :
+    metric === 'rating' ? (fp === '7d' ? '4.87' : fp === '30d' ? '4.82' : '4.79') :
+    metric === 'conversion' ? (fp === '7d' ? '68%' : fp === '30d' ? '64%' : '61%') :
+    metric === 'avgCheck' ? (fp === '7d' ? '$550' : fp === '30d' ? '$670' : '$665') :
+    metric === 'onTime' ? (fp === '7d' ? '96%' : fp === '30d' ? '94%' : '93%') :
+    metric === 'cancellation' ? (fp === '7d' ? '2.1%' : fp === '30d' ? '3.2%' : '3.5%') :
+    (fp === '7d' ? '3.8h' : fp === '30d' ? '4.2h' : '4.0h');
 
-  const periodLabel = filterPeriod === '7d' ? 'Last 7 Days' : filterPeriod === '30d' ? 'Last 30 Days' : 'Last 90 Days';
+  const periodLabel = filterPeriod === 'custom' ? `${customFrom.slice(5)} — ${customTo.slice(5)}` :
+    filterPeriod === '7d' ? 'Last 7 Days' : filterPeriod === '30d' ? 'Last 30 Days' : 'Last 90 Days';
 
   /* Render a single row based on metric type */
   const renderRow = (row: string[], i: number) => {
@@ -441,31 +446,89 @@ const DetailScreen: React.FC<{
         {(['7d', '30d', '90d'] as const).map(p => (
           <div
             key={p}
-            onClick={() => setFilterPeriod(p)}
+            onClick={() => { setFilterPeriod(p); setShowCustomPicker(false); }}
             style={{
               padding: '8px 18px', borderRadius: 10, cursor: 'pointer',
-              backgroundColor: filterPeriod === p ? colors.primary[500] : '#EFF2F7',
+              backgroundColor: filterPeriod === p ? colors.primary[500] : '#FFFFFF',
               transition: 'background-color 0.2s ease',
             } as any}
           >
             <span style={{
               fontFamily: F, fontSize: 13, fontWeight: 600,
-              color: filterPeriod === p ? '#FFFFFF' : colors.gray[500],
+              color: filterPeriod === p ? '#FFFFFF' : colors.gray[600],
             } as any}>
               {p === '7d' ? '7 Days' : p === '30d' ? '30 Days' : '90 Days'}
             </span>
           </div>
         ))}
-        <div style={{
-          display: 'flex', alignItems: 'center', gap: 6, padding: '8px 14px',
-          borderRadius: 10, backgroundColor: '#EFF2F7', cursor: 'pointer', marginLeft: 'auto',
-        } as any}>
-          <CalendarIcon />
-          <span style={{ fontFamily: F, fontSize: 13, fontWeight: 500, color: colors.gray[500] } as any}>
+        <div
+          onClick={() => { setFilterPeriod('custom'); setShowCustomPicker(!showCustomPicker); }}
+          style={{
+            display: 'flex', alignItems: 'center', gap: 6, padding: '8px 18px',
+            borderRadius: 10, cursor: 'pointer', marginLeft: 'auto',
+            backgroundColor: filterPeriod === 'custom' ? colors.primary[500] : '#FFFFFF',
+            transition: 'background-color 0.2s ease',
+          } as any}
+        >
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+            <rect x="3" y="4" width="18" height="18" rx="2" stroke={filterPeriod === 'custom' ? '#FFFFFF' : colors.gray[500]} strokeWidth="1.5"/>
+            <path d="M16 2V6M8 2V6M3 10H21" stroke={filterPeriod === 'custom' ? '#FFFFFF' : colors.gray[500]} strokeWidth="1.5" strokeLinecap="round"/>
+          </svg>
+          <span style={{
+            fontFamily: F, fontSize: 13, fontWeight: 600,
+            color: filterPeriod === 'custom' ? '#FFFFFF' : colors.gray[600],
+          } as any}>
             Custom
           </span>
         </div>
       </div>
+
+      {/* ── Custom Date Picker ── */}
+      {showCustomPicker && (
+        <div style={{
+          margin: '0 16px 12px', padding: 16, backgroundColor: '#FFFFFF',
+          borderRadius: 14, display: 'flex', gap: 10, alignItems: 'center',
+        } as any}>
+          <div style={{ flex: 1 } as any}>
+            <span style={{ fontFamily: F, fontSize: 11, fontWeight: 600, color: colors.gray[400], display: 'block', marginBottom: 6 } as any}>From</span>
+            <input
+              type="date"
+              value={customFrom}
+              onChange={(e: any) => setCustomFrom(e.target.value)}
+              style={{
+                width: '100%', padding: '10px 12px', borderRadius: 10,
+                backgroundColor: '#EFF2F7', fontFamily: F, fontSize: 13,
+                color: colors.gray[900], border: 'none', outline: 'none',
+                boxSizing: 'border-box',
+              } as any}
+            />
+          </div>
+          <span style={{ fontFamily: F, fontSize: 13, color: colors.gray[400], marginTop: 18 } as any}>—</span>
+          <div style={{ flex: 1 } as any}>
+            <span style={{ fontFamily: F, fontSize: 11, fontWeight: 600, color: colors.gray[400], display: 'block', marginBottom: 6 } as any}>To</span>
+            <input
+              type="date"
+              value={customTo}
+              onChange={(e: any) => setCustomTo(e.target.value)}
+              style={{
+                width: '100%', padding: '10px 12px', borderRadius: 10,
+                backgroundColor: '#EFF2F7', fontFamily: F, fontSize: 13,
+                color: colors.gray[900], border: 'none', outline: 'none',
+                boxSizing: 'border-box',
+              } as any}
+            />
+          </div>
+          <div
+            onClick={() => setShowCustomPicker(false)}
+            style={{
+              padding: '10px 16px', borderRadius: 10, marginTop: 18,
+              backgroundColor: colors.primary[500], cursor: 'pointer',
+            } as any}
+          >
+            <span style={{ fontFamily: F, fontSize: 13, fontWeight: 600, color: '#FFFFFF' } as any}>Apply</span>
+          </div>
+        </div>
+      )}
 
       {/* ── Scrollable Content ── */}
       <div style={{ flex: 1, overflowY: 'auto', padding: '0 16px 24px' } as any}>
@@ -559,8 +622,8 @@ export const CeoDashboardScreen: React.FC<CeoDashboardScreenProps> = ({
   );
 
   return (
-    <SafeAreaView style={s.safeArea}>
-      <View style={s.container}>
+    <SafeAreaView style={[s.safeArea, drillDown && { backgroundColor: '#F5F5F7' }]}>
+      <View style={[s.container, drillDown && { backgroundColor: '#F5F5F7' }]}>
         <StatusBarMock onTimeTap={onBack} />
 
         {drillDown ? (
