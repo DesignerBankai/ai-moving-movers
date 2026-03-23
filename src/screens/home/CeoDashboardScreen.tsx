@@ -443,89 +443,88 @@ const DetailScreen: React.FC<{
       <div style={{
         display: 'flex', alignItems: 'center', padding: '4px 16px 12px', gap: 8,
       } as any}>
-        {(['7d', '30d', '90d'] as const).map(p => (
-          <div
-            key={p}
-            onClick={() => { setFilterPeriod(p); setShowCustomPicker(false); }}
-            style={{
-              padding: '8px 18px', borderRadius: 10, cursor: 'pointer',
-              backgroundColor: filterPeriod === p ? colors.primary[500] : '#FFFFFF',
-              transition: 'background-color 0.2s ease',
-            } as any}
-          >
-            <span style={{
-              fontFamily: F, fontSize: 13, fontWeight: 600,
-              color: filterPeriod === p ? '#FFFFFF' : colors.gray[600],
-            } as any}>
-              {p === '7d' ? '7 Days' : p === '30d' ? '30 Days' : '90 Days'}
-            </span>
-          </div>
-        ))}
-        <div
-          onClick={() => { setFilterPeriod('custom'); setShowCustomPicker(!showCustomPicker); }}
-          style={{
-            display: 'flex', alignItems: 'center', gap: 6, padding: '8px 18px',
-            borderRadius: 10, cursor: 'pointer', marginLeft: 'auto',
-            backgroundColor: filterPeriod === 'custom' ? colors.primary[500] : '#FFFFFF',
-            transition: 'background-color 0.2s ease',
-          } as any}
-        >
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
-            <rect x="3" y="4" width="18" height="18" rx="2" stroke={filterPeriod === 'custom' ? '#FFFFFF' : colors.gray[500]} strokeWidth="1.5"/>
-            <path d="M16 2V6M8 2V6M3 10H21" stroke={filterPeriod === 'custom' ? '#FFFFFF' : colors.gray[500]} strokeWidth="1.5" strokeLinecap="round"/>
-          </svg>
-          <span style={{
-            fontFamily: F, fontSize: 13, fontWeight: 600,
-            color: filterPeriod === 'custom' ? '#FFFFFF' : colors.gray[600],
-          } as any}>
-            Custom
-          </span>
-        </div>
+        {(['7d', '30d', '90d', 'custom'] as const).map(p => {
+          const active = filterPeriod === p;
+          const isCustom = p === 'custom';
+          return (
+            <div
+              key={p}
+              onClick={() => {
+                if (isCustom) { setFilterPeriod('custom'); setShowCustomPicker(!showCustomPicker); }
+                else { setFilterPeriod(p); setShowCustomPicker(false); }
+              }}
+              style={{
+                height: 36, borderRadius: 10, cursor: 'pointer',
+                backgroundColor: active ? colors.primary[500] : '#FFFFFF',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                padding: '0 16px', gap: isCustom ? 6 : 0,
+                ...(isCustom ? { marginLeft: 'auto' } : {}),
+              } as any}
+            >
+              {isCustom && (
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+                  <rect x="3" y="4" width="18" height="18" rx="2" stroke={active ? '#FFFFFF' : colors.gray[500]} strokeWidth="1.5"/>
+                  <path d="M16 2V6M8 2V6M3 10H21" stroke={active ? '#FFFFFF' : colors.gray[500]} strokeWidth="1.5" strokeLinecap="round"/>
+                </svg>
+              )}
+              <span style={{
+                fontFamily: F, fontSize: 13, fontWeight: 600,
+                color: active ? '#FFFFFF' : colors.gray[600],
+              } as any}>
+                {p === '7d' ? '7 Days' : p === '30d' ? '30 Days' : p === '90d' ? '90 Days' : 'Custom'}
+              </span>
+            </div>
+          );
+        })}
       </div>
 
       {/* ── Custom Date Picker ── */}
       {showCustomPicker && (
         <div style={{
           margin: '0 16px 12px', padding: 16, backgroundColor: '#FFFFFF',
-          borderRadius: 14, display: 'flex', gap: 10, alignItems: 'center',
+          borderRadius: 14,
         } as any}>
-          <div style={{ flex: 1 } as any}>
-            <span style={{ fontFamily: F, fontSize: 11, fontWeight: 600, color: colors.gray[400], display: 'block', marginBottom: 6 } as any}>From</span>
-            <input
-              type="date"
-              value={customFrom}
-              onChange={(e: any) => setCustomFrom(e.target.value)}
-              style={{
-                width: '100%', padding: '10px 12px', borderRadius: 10,
-                backgroundColor: '#EFF2F7', fontFamily: F, fontSize: 13,
-                color: colors.gray[900], border: 'none', outline: 'none',
-                boxSizing: 'border-box',
-              } as any}
-            />
-          </div>
-          <span style={{ fontFamily: F, fontSize: 13, color: colors.gray[400], marginTop: 18 } as any}>—</span>
-          <div style={{ flex: 1 } as any}>
-            <span style={{ fontFamily: F, fontSize: 11, fontWeight: 600, color: colors.gray[400], display: 'block', marginBottom: 6 } as any}>To</span>
-            <input
-              type="date"
-              value={customTo}
-              onChange={(e: any) => setCustomTo(e.target.value)}
-              style={{
-                width: '100%', padding: '10px 12px', borderRadius: 10,
-                backgroundColor: '#EFF2F7', fontFamily: F, fontSize: 13,
-                color: colors.gray[900], border: 'none', outline: 'none',
-                boxSizing: 'border-box',
-              } as any}
-            />
+          <div style={{ display: 'flex', gap: 10, alignItems: 'center', marginBottom: 12 } as any}>
+            <div style={{ flex: 1 } as any}>
+              <span style={{ fontFamily: F, fontSize: 11, fontWeight: 600, color: colors.gray[400], display: 'block', marginBottom: 6 } as any}>From</span>
+              <input
+                type="date"
+                value={customFrom}
+                onChange={(e: any) => setCustomFrom(e.target.value)}
+                style={{
+                  width: '100%', padding: '10px 12px', borderRadius: 10,
+                  backgroundColor: '#EFF2F7', fontFamily: F, fontSize: 14,
+                  color: colors.gray[900], border: 'none', outline: 'none',
+                  boxSizing: 'border-box',
+                } as any}
+              />
+            </div>
+            <span style={{ fontFamily: F, fontSize: 13, color: colors.gray[400], marginTop: 20 } as any}>—</span>
+            <div style={{ flex: 1 } as any}>
+              <span style={{ fontFamily: F, fontSize: 11, fontWeight: 600, color: colors.gray[400], display: 'block', marginBottom: 6 } as any}>To</span>
+              <input
+                type="date"
+                value={customTo}
+                onChange={(e: any) => setCustomTo(e.target.value)}
+                style={{
+                  width: '100%', padding: '10px 12px', borderRadius: 10,
+                  backgroundColor: '#EFF2F7', fontFamily: F, fontSize: 14,
+                  color: colors.gray[900], border: 'none', outline: 'none',
+                  boxSizing: 'border-box',
+                } as any}
+              />
+            </div>
           </div>
           <div
             onClick={() => setShowCustomPicker(false)}
             style={{
-              padding: '10px 16px', borderRadius: 10, marginTop: 18,
+              width: '100%', height: 44, borderRadius: 10,
               backgroundColor: colors.primary[500], cursor: 'pointer',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              boxSizing: 'border-box',
             } as any}
           >
-            <span style={{ fontFamily: F, fontSize: 13, fontWeight: 600, color: '#FFFFFF' } as any}>Apply</span>
+            <span style={{ fontFamily: F, fontSize: 14, fontWeight: 600, color: '#FFFFFF' } as any}>Apply</span>
           </div>
         </div>
       )}
