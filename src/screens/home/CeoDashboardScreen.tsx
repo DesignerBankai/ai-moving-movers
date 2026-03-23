@@ -540,7 +540,7 @@ const DetailScreen: React.FC<{
       )}
 
       {/* ── Scrollable Content ── */}
-      <div style={{ flex: 1, overflowY: 'auto', padding: '0 16px 24px' } as any}>
+      <div style={{ flex: 1, overflowY: 'auto', padding: '0 16px 0' } as any}>
         {/* Summary Card */}
         <div style={{
           backgroundColor: '#FFFFFF', borderRadius: 16, padding: '20px', marginBottom: 16,
@@ -573,6 +573,9 @@ const DetailScreen: React.FC<{
 
         {/* Row List */}
         {data.rows.map((row, i) => renderRow(row, i))}
+
+        {/* Bottom spacer so last card is fully visible when scrolled */}
+        <div style={{ height: 48 } as any} />
       </div>
     </div>
   );
