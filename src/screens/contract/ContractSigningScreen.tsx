@@ -304,33 +304,51 @@ const CollapsibleSection: React.FC<{
   const [open, setOpen] = useState(defaultOpen);
   return (
     <div style={{
-      marginBottom: 12, borderRadius: 16, border: `1px solid ${colors.gray[100]}`,
+      marginBottom: 12, borderRadius: 16,
       overflow: 'hidden', backgroundColor: '#FFFFFF',
+      boxShadow: '0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04)',
     } as any}>
       <div
         onClick={() => setOpen(!open)}
         style={{
           display: 'flex', alignItems: 'center', padding: '16px 20px',
-          cursor: 'pointer', backgroundColor: open ? colors.primary[25] : '#FAFAFA',
+          cursor: 'pointer',
+          backgroundColor: open ? colors.primary[50] : '#F0F1F3',
           gap: 10, minHeight: 56, userSelect: 'none',
+          borderBottom: open ? `1px solid ${colors.primary[100]}` : 'none',
         } as any}
       >
-        {icon}
+        <div style={{
+          width: 36, height: 36, borderRadius: 10,
+          backgroundColor: open ? colors.primary[100] : '#FFFFFF',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          flexShrink: 0,
+        } as any}>
+          {icon}
+        </div>
         <span style={{ fontFamily: F, fontSize: 16, fontWeight: 700, color: colors.gray[800], flex: 1 } as any}>
           {title}
         </span>
         {badge && (
           <span style={{
             fontFamily: F, fontSize: 12, fontWeight: 600, color: colors.primary[600],
-            backgroundColor: colors.primary[50], padding: '4px 10px', borderRadius: 10,
+            backgroundColor: open ? colors.primary[100] : colors.primary[50],
+            padding: '4px 10px', borderRadius: 10,
           } as any}>{badge}</span>
         )}
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-          <path d={open ? "M6 15L12 9L18 15" : "M6 9L12 15L18 9"} stroke={colors.gray[400]} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-        </svg>
+        <div style={{
+          width: 32, height: 32, borderRadius: 8,
+          backgroundColor: open ? colors.primary[100] : '#FFFFFF',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          flexShrink: 0,
+        } as any}>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+            <path d={open ? "M6 15L12 9L18 15" : "M6 9L12 15L18 9"} stroke={open ? colors.primary[600] : colors.gray[400]} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
+        </div>
       </div>
       {open && (
-        <div style={{ padding: '16px 20px', borderTop: `1px solid ${colors.gray[100]}` } as any}>
+        <div style={{ padding: '16px 20px' } as any}>
           {children}
         </div>
       )}
@@ -566,9 +584,10 @@ export const ContractSigningScreen: React.FC<ContractSigningScreenProps> = ({
                 <div
                   onClick={() => setEditingClient(true)}
                   style={{
-                    display: 'inline-flex', alignItems: 'center', gap: 8, padding: '10px 16px',
-                    borderRadius: 12, backgroundColor: colors.primary[50], cursor: 'pointer',
-                    minHeight: 44,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+                    padding: '12px 16px', borderRadius: 12, backgroundColor: colors.primary[50],
+                    cursor: 'pointer', minHeight: 44, width: '100%', boxSizing: 'border-box',
+                    border: `1px solid ${colors.primary[100]}`,
                   } as any}
                 >
                   <EditPenIcon />
@@ -584,12 +603,13 @@ export const ContractSigningScreen: React.FC<ContractSigningScreenProps> = ({
                 <div
                   onClick={() => setEditingClient(false)}
                   style={{
-                    display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 6,
-                    padding: '8px 16px', borderRadius: 8, backgroundColor: colors.primary[500],
-                    cursor: 'pointer', marginTop: 4,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+                    padding: '12px 16px', borderRadius: 12, backgroundColor: colors.primary[500],
+                    cursor: 'pointer', marginTop: 8, minHeight: 44, width: '100%',
+                    boxSizing: 'border-box',
                   } as any}
                 >
-                  <span style={{ fontFamily: F, fontSize: 13, fontWeight: 600, color: '#FFFFFF' } as any}>Save Changes</span>
+                  <span style={{ fontFamily: F, fontSize: 15, fontWeight: 700, color: '#FFFFFF' } as any}>Save Changes</span>
                 </div>
               </div>
             )}
@@ -695,13 +715,14 @@ export const ContractSigningScreen: React.FC<ContractSigningScreenProps> = ({
               <div
                 onClick={() => setShowAddModal(true)}
                 style={{
-                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
-                  padding: '10px 0', borderRadius: 10, backgroundColor: colors.primary[500],
-                  cursor: 'pointer', marginTop: 8,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+                  padding: '12px 0', borderRadius: 12, backgroundColor: colors.primary[500],
+                  cursor: 'pointer', marginTop: 10, minHeight: 44, width: '100%',
+                  boxSizing: 'border-box',
                 } as any}
               >
                 <PlusIcon />
-                <span style={{ fontFamily: F, fontSize: 13, fontWeight: 700, color: '#FFFFFF' } as any}>
+                <span style={{ fontFamily: F, fontSize: 15, fontWeight: 700, color: '#FFFFFF' } as any}>
                   Add Item or Service
                 </span>
               </div>
@@ -777,26 +798,26 @@ export const ContractSigningScreen: React.FC<ContractSigningScreenProps> = ({
                 />
 
                 {/* Actions */}
-                <div style={{ display: 'flex', gap: 8, marginTop: 6 } as any}>
+                <div style={{ display: 'flex', gap: 8, marginTop: 10 } as any}>
                   <div
                     onClick={() => { setShowAddModal(false); setAddName(''); setAddPrice(''); setAddRoom(''); setAddQty('1'); setAddSize(''); setAddDescription(''); }}
                     style={{
                       flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      padding: '10px 0', borderRadius: 10, cursor: 'pointer',
+                      padding: '12px 0', borderRadius: 12, cursor: 'pointer', minHeight: 44,
                       border: `1px solid ${colors.gray[200]}`, backgroundColor: '#FFFFFF',
                     } as any}
                   >
-                    <span style={{ fontFamily: F, fontSize: 13, fontWeight: 600, color: colors.gray[600] } as any}>Cancel</span>
+                    <span style={{ fontFamily: F, fontSize: 15, fontWeight: 600, color: colors.gray[600] } as any}>Cancel</span>
                   </div>
                   <div
                     onClick={addAdditionalItem}
                     style={{
                       flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      padding: '10px 0', borderRadius: 10, cursor: 'pointer',
+                      padding: '12px 0', borderRadius: 12, cursor: 'pointer', minHeight: 44,
                       backgroundColor: addName.trim() ? colors.primary[500] : colors.gray[200],
                     } as any}
                   >
-                    <span style={{ fontFamily: F, fontSize: 13, fontWeight: 700, color: addName.trim() ? '#FFFFFF' : colors.gray[400] } as any}>Add</span>
+                    <span style={{ fontFamily: F, fontSize: 15, fontWeight: 700, color: addName.trim() ? '#FFFFFF' : colors.gray[400] } as any}>Add</span>
                   </div>
                 </div>
               </div>
