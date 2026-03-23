@@ -133,6 +133,33 @@ const ServiceIcon = () => (
    Helper: inline input
    ═══════════════════════════════════════════ */
 
+/* ── Standard sizes (derived from design-system Input & Button) ── */
+const INPUT_STYLE = {
+  width: '100%', padding: '13px 16px', borderRadius: 12,
+  border: 'none', fontFamily: F, fontSize: 15,
+  color: colors.gray[900], outline: 'none', backgroundColor: '#EFF2F7',
+  boxSizing: 'border-box', minHeight: 50,
+} as any;
+
+const BTN_PRIMARY = {
+  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+  padding: '8px 16px', borderRadius: 10, backgroundColor: colors.primary[500],
+  cursor: 'pointer', minHeight: 36, width: '100%', boxSizing: 'border-box',
+} as any;
+
+const BTN_SECONDARY = {
+  ...BTN_PRIMARY,
+  backgroundColor: colors.primary[50],
+} as any;
+
+const BTN_LABEL_PRIMARY = {
+  fontFamily: F, fontSize: 13, fontWeight: 600, color: '#FFFFFF',
+} as any;
+
+const BTN_LABEL_SECONDARY = {
+  fontFamily: F, fontSize: 13, fontWeight: 600, color: colors.primary[600],
+} as any;
+
 const InlineInput: React.FC<{
   label: string;
   value: string;
@@ -149,12 +176,7 @@ const InlineInput: React.FC<{
       value={value}
       onChange={(e: any) => onChange(e.target.value)}
       placeholder={placeholder || ''}
-      style={{
-        width: '100%', padding: '12px 14px', borderRadius: 12,
-        border: 'none', fontFamily: F, fontSize: 15,
-        color: colors.gray[900], outline: 'none', backgroundColor: '#F0F1F3',
-        boxSizing: 'border-box', minHeight: 44,
-      } as any}
+      style={INPUT_STYLE}
     />
   </div>
 );
@@ -588,16 +610,9 @@ export const ContractSigningScreen: React.FC<ContractSigningScreenProps> = ({
                     </div>
                   )}
                 </div>
-                <div
-                  onClick={() => setEditingClient(true)}
-                  style={{
-                    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
-                    padding: '10px 16px', borderRadius: 12, backgroundColor: colors.primary[50],
-                    cursor: 'pointer', minHeight: 40, width: '100%', boxSizing: 'border-box',
-                  } as any}
-                >
+                <div onClick={() => setEditingClient(true)} style={BTN_SECONDARY}>
                   <EditPenIcon />
-                  <span style={{ fontFamily: F, fontSize: 14, fontWeight: 600, color: colors.primary[600] } as any}>Edit Client Info</span>
+                  <span style={BTN_LABEL_SECONDARY}>Edit Client Info</span>
                 </div>
               </div>
             ) : (
@@ -606,16 +621,8 @@ export const ContractSigningScreen: React.FC<ContractSigningScreenProps> = ({
                 <InlineInput label="Phone" value={clientData.phone} onChange={v => setClientData(prev => ({ ...prev, phone: v }))} placeholder="+1 (555) 000-0000" type="tel" />
                 <InlineInput label="Email" value={clientData.email} onChange={v => setClientData(prev => ({ ...prev, email: v }))} placeholder="email@example.com" type="email" />
                 <InlineInput label="Address" value={clientData.address || ''} onChange={v => setClientData(prev => ({ ...prev, address: v }))} placeholder="Street address" />
-                <div
-                  onClick={() => setEditingClient(false)}
-                  style={{
-                    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
-                    padding: '10px 16px', borderRadius: 12, backgroundColor: colors.primary[500],
-                    cursor: 'pointer', marginTop: 8, minHeight: 40, width: '100%',
-                    boxSizing: 'border-box',
-                  } as any}
-                >
-                  <span style={{ fontFamily: F, fontSize: 14, fontWeight: 700, color: '#FFFFFF' } as any}>Save Changes</span>
+                <div onClick={() => setEditingClient(false)} style={{ ...BTN_PRIMARY, marginTop: 8 }}>
+                  <span style={BTN_LABEL_PRIMARY}>Save Changes</span>
                 </div>
               </div>
             )}
@@ -653,8 +660,8 @@ export const ContractSigningScreen: React.FC<ContractSigningScreenProps> = ({
                       } as any}>{item.tag}</span>
                     )}
                     <div onClick={() => removeInventoryItem(item.id)} style={{
-                      cursor: 'pointer', padding: 10, borderRadius: 10, display: 'flex',
-                      backgroundColor: '#FEF3F2', minWidth: 40, minHeight: 40,
+                      cursor: 'pointer', padding: 8, borderRadius: 10, display: 'flex',
+                      backgroundColor: '#FEF3F2', minWidth: 36, minHeight: 36,
                       alignItems: 'center', justifyContent: 'center',
                     } as any}>
                       <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
@@ -718,19 +725,9 @@ export const ContractSigningScreen: React.FC<ContractSigningScreenProps> = ({
 
             {/* Add button */}
             {!showAddModal && (
-              <div
-                onClick={() => setShowAddModal(true)}
-                style={{
-                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
-                  padding: '10px 0', borderRadius: 12, backgroundColor: colors.primary[500],
-                  cursor: 'pointer', marginTop: 10, minHeight: 40, width: '100%',
-                  boxSizing: 'border-box',
-                } as any}
-              >
+              <div onClick={() => setShowAddModal(true)} style={{ ...BTN_PRIMARY, marginTop: 10 }}>
                 <PlusIcon />
-                <span style={{ fontFamily: F, fontSize: 14, fontWeight: 700, color: '#FFFFFF' } as any}>
-                  Add Item or Service
-                </span>
+                <span style={BTN_LABEL_PRIMARY}>Add Item or Service</span>
               </div>
             )}
 
@@ -752,8 +749,8 @@ export const ContractSigningScreen: React.FC<ContractSigningScreenProps> = ({
                       onClick={() => setAddType(t)}
                       style={{
                         flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
-                        padding: '10px 0', borderRadius: 10, cursor: 'pointer',
-                        backgroundColor: addType === t ? colors.primary[50] : '#F0F1F3',
+                        padding: '8px 0', borderRadius: 10, cursor: 'pointer', minHeight: 36,
+                        backgroundColor: addType === t ? colors.primary[50] : '#EFF2F7',
                       } as any}
                     >
                       {t === 'furniture' ? <FurnitureIcon /> : <ServiceIcon />}
@@ -806,23 +803,15 @@ export const ContractSigningScreen: React.FC<ContractSigningScreenProps> = ({
                 <div style={{ display: 'flex', gap: 8, marginTop: 10 } as any}>
                   <div
                     onClick={() => { setShowAddModal(false); setAddName(''); setAddPrice(''); setAddRoom(''); setAddQty('1'); setAddSize(''); setAddDescription(''); }}
-                    style={{
-                      flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      padding: '10px 0', borderRadius: 12, cursor: 'pointer', minHeight: 40,
-                      backgroundColor: '#F0F1F3',
-                    } as any}
+                    style={{ ...BTN_SECONDARY, flex: 1, backgroundColor: '#EFF2F7' }}
                   >
-                    <span style={{ fontFamily: F, fontSize: 14, fontWeight: 600, color: colors.gray[600] } as any}>Cancel</span>
+                    <span style={{ ...BTN_LABEL_SECONDARY, color: colors.gray[600] }}>Cancel</span>
                   </div>
                   <div
                     onClick={addAdditionalItem}
-                    style={{
-                      flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      padding: '10px 0', borderRadius: 12, cursor: 'pointer', minHeight: 40,
-                      backgroundColor: addName.trim() ? colors.primary[500] : colors.gray[200],
-                    } as any}
+                    style={{ ...BTN_PRIMARY, flex: 1, backgroundColor: addName.trim() ? colors.primary[500] : colors.gray[200] }}
                   >
-                    <span style={{ fontFamily: F, fontSize: 14, fontWeight: 700, color: addName.trim() ? '#FFFFFF' : colors.gray[400] } as any}>Add</span>
+                    <span style={{ ...BTN_LABEL_PRIMARY, color: addName.trim() ? '#FFFFFF' : colors.gray[400] }}>Add</span>
                   </div>
                 </div>
               </div>
@@ -907,10 +896,9 @@ export const ContractSigningScreen: React.FC<ContractSigningScreenProps> = ({
                     onChange={(e: any) => setMoverTypedName(e.target.value)}
                     placeholder={signerName}
                     style={{
-                      width: '100%', padding: '12px 14px', borderRadius: 12,
-                      border: 'none',
-                      fontFamily: F, fontSize: 15, fontWeight: 500, color: colors.gray[900],
-                      outline: 'none', backgroundColor: moverTypedName ? colors.primary[25] : '#F0F1F3', boxSizing: 'border-box',
+                      ...INPUT_STYLE,
+                      fontWeight: 500,
+                      backgroundColor: moverTypedName ? colors.primary[25] : '#EFF2F7',
                     } as any}
                   />
                 </div>
@@ -948,10 +936,9 @@ export const ContractSigningScreen: React.FC<ContractSigningScreenProps> = ({
                     onChange={(e: any) => setClientTypedName(e.target.value)}
                     placeholder={clientName}
                     style={{
-                      width: '100%', padding: '12px 14px', borderRadius: 12,
-                      border: 'none',
-                      fontFamily: F, fontSize: 15, fontWeight: 500, color: colors.gray[900],
-                      outline: 'none', backgroundColor: clientTypedName ? colors.primary[25] : '#F0F1F3', boxSizing: 'border-box',
+                      ...INPUT_STYLE,
+                      fontWeight: 500,
+                      backgroundColor: clientTypedName ? colors.primary[25] : '#EFF2F7',
                     } as any}
                   />
                 </div>
