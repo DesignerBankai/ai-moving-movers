@@ -281,8 +281,80 @@ const DRILL_DOWN_DATA: Record<MetricKey, { columns: string[]; rows: string[][] }
 };
 
 /* ═══════════════════════════════════════════
-   Detail Screen Component
+   Detail Screen Component — HIG card-based
    ═══════════════════════════════════════════ */
+
+/* Status badge helper */
+const StatusBadge = ({ status }: { status: string }) => {
+  const isCompleted = status === 'Completed';
+  const isProgress = status === 'In Progress';
+  const isCancelled = status === 'Cancelled';
+  const bg = isCompleted ? colors.success[50] : isProgress ? colors.primary[50] : isCancelled ? '#FEF3F2' : '#EFF2F7';
+  const fg = isCompleted ? colors.success[500] : isProgress ? colors.primary[500] : isCancelled ? colors.error[500] : colors.gray[500];
+  return (
+    <span style={{
+      fontFamily: F, fontSize: 12, fontWeight: 600, color: fg,
+      backgroundColor: bg, padding: '4px 10px', borderRadius: 8,
+    } as any}>{status}</span>
+  );
+};
+
+/* Row renderers per metric type */
+const OrderRow = ({ row }: { row: string[] }) => (
+  <div style={{ backgroundColor: '#FFFFFF', borderRadius: 14, padding: '14px 16px', marginBottom: 8 } as any}>
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 } as any}>
+      <span style={{ fontFamily: F, fontSize: 15, fontWeight: 600, color: colors.gray[900] } as any}>{row[1]}</span>
+      <StatusBadge status={row[4]} />
+    </div>
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' } as any}>
+      <span style={{ fontFamily: F, fontSize: 13, color: colors.gray[500] } as any}>{row[2]}</span>
+      <span style={{ fontFamily: F, fontSize: 15, fontWeight: 700, color: colors.gray[900] } as any}>{row[3]}</span>
+    </div>
+    <span style={{ fontFamily: F, fontSize: 12, color: colors.gray[400], display: 'block', marginTop: 6 } as any}>{row[0]}</span>
+  </div>
+);
+
+const RatingRow = ({ row }: { row: string[] }) => (
+  <div style={{ backgroundColor: '#FFFFFF', borderRadius: 14, padding: '14px 16px', marginBottom: 8 } as any}>
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 } as any}>
+      <span style={{ fontFamily: F, fontSize: 15, fontWeight: 600, color: colors.gray[900] } as any}>{row[1]}</span>
+      <span style={{ fontFamily: F, fontSize: 14, fontWeight: 700, color: colors.warning[600] } as any}>{row[3]}</span>
+    </div>
+    <span style={{ fontFamily: F, fontSize: 13, color: colors.gray[500], display: 'block', marginBottom: 4 } as any}>Mover: {row[2]}</span>
+    <span style={{ fontFamily: F, fontSize: 13, color: colors.gray[600], fontStyle: 'italic', display: 'block' } as any}>"{row[4]}"</span>
+    <span style={{ fontFamily: F, fontSize: 12, color: colors.gray[400], display: 'block', marginTop: 6 } as any}>{row[0]}</span>
+  </div>
+);
+
+const ConversionRow = ({ row }: { row: string[] }) => (
+  <div style={{ backgroundColor: '#FFFFFF', borderRadius: 14, padding: '14px 16px', marginBottom: 8 } as any}>
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 } as any}>
+      <span style={{ fontFamily: F, fontSize: 15, fontWeight: 600, color: colors.gray[900] } as any}>{row[0]}</span>
+      <span style={{
+        fontFamily: F, fontSize: 14, fontWeight: 700,
+        color: parseInt(row[3]) >= 70 ? colors.success[500] : colors.gray[700],
+      } as any}>{row[3]}</span>
+    </div>
+    <div style={{ display: 'flex', gap: 16 } as any}>
+      <span style={{ fontFamily: F, fontSize: 13, color: colors.gray[500] } as any}>{row[1]} requests</span>
+      <span style={{ fontFamily: F, fontSize: 13, color: colors.success[500] } as any}>{row[2]} converted</span>
+    </div>
+    <span style={{ fontFamily: F, fontSize: 12, color: colors.gray[400], display: 'block', marginTop: 6 } as any}>Source: {row[4]}</span>
+  </div>
+);
+
+const GenericTwoLineRow = ({ row, valueFn }: { row: string[]; valueFn?: (r: string[]) => { main: string; mainColor?: string; sub: string } }) => {
+  const v = valueFn ? valueFn(row) : { main: row[row.length - 1], sub: row.slice(1, -1).join(' · ') };
+  return (
+    <div style={{ backgroundColor: '#FFFFFF', borderRadius: 14, padding: '14px 16px', marginBottom: 8 } as any}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 } as any}>
+        <span style={{ fontFamily: F, fontSize: 15, fontWeight: 600, color: colors.gray[900] } as any}>{row[0]}</span>
+        <span style={{ fontFamily: F, fontSize: 15, fontWeight: 700, color: v.mainColor || colors.gray[900] } as any}>{v.main}</span>
+      </div>
+      <span style={{ fontFamily: F, fontSize: 13, color: colors.gray[500], display: 'block' } as any}>{v.sub}</span>
+    </div>
+  );
+};
 
 const DetailScreen: React.FC<{
   metric: MetricKey;
@@ -290,142 +362,145 @@ const DetailScreen: React.FC<{
 }> = ({ metric, onBack }) => {
   const config = METRIC_CONFIG[metric];
   const data = DRILL_DOWN_DATA[metric];
-  const [filterPeriod, setFilterPeriod] = useState<'7d' | '30d' | '90d'>('30d');
+  const [filterPeriod, setFilterPeriod] = useState<'7d' | '30d' | '90d'>('7d');
+
+  const summaryValue =
+    metric === 'orders' ? (filterPeriod === '7d' ? '42' : filterPeriod === '30d' ? '186' : '524') :
+    metric === 'revenue' ? (filterPeriod === '7d' ? '$23,100' : filterPeriod === '30d' ? '$124,800' : '$348,600') :
+    metric === 'rating' ? (filterPeriod === '7d' ? '4.87' : filterPeriod === '30d' ? '4.82' : '4.79') :
+    metric === 'conversion' ? (filterPeriod === '7d' ? '68%' : filterPeriod === '30d' ? '64%' : '61%') :
+    metric === 'avgCheck' ? (filterPeriod === '7d' ? '$550' : filterPeriod === '30d' ? '$670' : '$665') :
+    metric === 'onTime' ? (filterPeriod === '7d' ? '96%' : filterPeriod === '30d' ? '94%' : '93%') :
+    metric === 'cancellation' ? (filterPeriod === '7d' ? '2.1%' : filterPeriod === '30d' ? '3.2%' : '3.5%') :
+    (filterPeriod === '7d' ? '3.8h' : filterPeriod === '30d' ? '4.2h' : '4.0h');
+
+  const periodLabel = filterPeriod === '7d' ? 'Last 7 Days' : filterPeriod === '30d' ? 'Last 30 Days' : 'Last 90 Days';
+
+  /* Render a single row based on metric type */
+  const renderRow = (row: string[], i: number) => {
+    if (metric === 'orders') return <OrderRow key={i} row={row} />;
+    if (metric === 'rating') return <RatingRow key={i} row={row} />;
+    if (metric === 'conversion') return <ConversionRow key={i} row={row} />;
+    if (metric === 'revenue') return (
+      <GenericTwoLineRow key={i} row={row} valueFn={r => ({
+        main: r[2], mainColor: colors.primary[500],
+        sub: `${r[1]} orders · Avg ${r[3]} · ${r[4]}`,
+      })} />
+    );
+    if (metric === 'avgCheck') return (
+      <GenericTwoLineRow key={i} row={row} valueFn={r => ({
+        main: r[3],
+        sub: `${r[1]} orders · ${r[2]} total revenue · ${r[4]}`,
+      })} />
+    );
+    if (metric === 'onTime') return (
+      <GenericTwoLineRow key={i} row={row} valueFn={r => ({
+        main: r[4], mainColor: parseInt(r[4]) >= 95 ? colors.success[500] : colors.warning[500],
+        sub: `${r[2]} on-time · ${r[3]} late · ${r[1]} total`,
+      })} />
+    );
+    if (metric === 'cancellation') return (
+      <GenericTwoLineRow key={i} row={row} valueFn={r => ({
+        main: r[3], mainColor: colors.error[500],
+        sub: `${r[1]} · ${r[2]} · Mover: ${r[4]}`,
+      })} />
+    );
+    if (metric === 'avgTime') return (
+      <GenericTwoLineRow key={i} row={row} valueFn={r => ({
+        main: r[4], mainColor: colors.primary[500],
+        sub: `${r[1]} · ${r[2]} rooms · ${r[3]}`,
+      })} />
+    );
+    return null;
+  };
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: '100%' } as any}>
-      {/* Header */}
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100%', backgroundColor: '#F5F5F7' } as any}>
+      {/* ── Navigation Bar ── */}
       <div style={{
-        display: 'flex', alignItems: 'center', padding: '12px 16px', gap: 12,
-        backgroundColor: '#FFFFFF',
+        display: 'flex', alignItems: 'center', padding: '14px 16px', gap: 14,
+        backgroundColor: '#F5F5F7',
       } as any}>
-        <div onClick={onBack} style={{ cursor: 'pointer', padding: 4 } as any}>
+        <div onClick={onBack} style={{
+          width: 36, height: 36, borderRadius: 10,
+          backgroundColor: '#EFF2F7',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          cursor: 'pointer', flexShrink: 0,
+        } as any}>
           <BackIcon />
         </div>
-        <div style={{
-          width: 32, height: 32, borderRadius: 8,
-          backgroundColor: `${config.color}15`,
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-        } as any}>
-          {config.icon}
-        </div>
-        <span style={{ fontFamily: F, fontSize: 17, fontWeight: 700, color: colors.gray[900], flex: 1 } as any}>
+        <span style={{ fontFamily: F, fontSize: 18, fontWeight: 700, color: colors.gray[900], flex: 1 } as any}>
           {config.title}
         </span>
       </div>
 
-      {/* Filters */}
+      {/* ── Filter Chips ── */}
       <div style={{
-        display: 'flex', alignItems: 'center', padding: '10px 16px', gap: 8,
-        backgroundColor: '#FFFFFF',
+        display: 'flex', alignItems: 'center', padding: '4px 16px 12px', gap: 8,
       } as any}>
-        <FilterIcon />
         {(['7d', '30d', '90d'] as const).map(p => (
           <div
             key={p}
             onClick={() => setFilterPeriod(p)}
             style={{
-              padding: '6px 14px', borderRadius: 8, cursor: 'pointer',
+              padding: '8px 18px', borderRadius: 10, cursor: 'pointer',
               backgroundColor: filterPeriod === p ? colors.primary[500] : '#EFF2F7',
+              transition: 'background-color 0.2s ease',
             } as any}
           >
             <span style={{
-              fontFamily: F, fontSize: 12, fontWeight: 600,
+              fontFamily: F, fontSize: 13, fontWeight: 600,
               color: filterPeriod === p ? '#FFFFFF' : colors.gray[500],
             } as any}>
               {p === '7d' ? '7 Days' : p === '30d' ? '30 Days' : '90 Days'}
             </span>
           </div>
         ))}
-        <div style={{ flex: 1 } as any} />
         <div style={{
-          display: 'flex', alignItems: 'center', gap: 4, padding: '6px 12px',
-          borderRadius: 8, backgroundColor: '#EFF2F7', cursor: 'pointer',
+          display: 'flex', alignItems: 'center', gap: 6, padding: '8px 14px',
+          borderRadius: 10, backgroundColor: '#EFF2F7', cursor: 'pointer', marginLeft: 'auto',
         } as any}>
           <CalendarIcon />
-          <span style={{ fontFamily: F, fontSize: 12, fontWeight: 500, color: colors.gray[500] } as any}>
+          <span style={{ fontFamily: F, fontSize: 13, fontWeight: 500, color: colors.gray[500] } as any}>
             Custom
           </span>
         </div>
       </div>
 
-      {/* Table */}
-      <div style={{ flex: 1, overflowY: 'auto', padding: '0 16px 20px', backgroundColor: '#FAFAFA' } as any}>
-        {/* Summary card */}
+      {/* ── Scrollable Content ── */}
+      <div style={{ flex: 1, overflowY: 'auto', padding: '0 16px 24px' } as any}>
+        {/* Summary Card */}
         <div style={{
-          backgroundColor: '#FFFFFF', borderRadius: 16, padding: '16px', marginTop: 12, marginBottom: 12,
+          backgroundColor: '#FFFFFF', borderRadius: 16, padding: '20px', marginBottom: 16,
         } as any}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8 } as any}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 14 } as any}>
             <div style={{
-              width: 40, height: 40, borderRadius: 12,
-              backgroundColor: `${config.color}15`,
+              width: 48, height: 48, borderRadius: 14,
+              backgroundColor: `${config.color}12`,
               display: 'flex', alignItems: 'center', justifyContent: 'center',
+              flexShrink: 0,
             } as any}>
               {config.icon}
             </div>
             <div style={{ flex: 1 } as any}>
-              <span style={{ fontFamily: F, fontSize: 12, color: colors.gray[400], display: 'block' } as any}>
-                {filterPeriod === '7d' ? 'Last 7 Days' : filterPeriod === '30d' ? 'Last 30 Days' : 'Last 90 Days'}
+              <span style={{ fontFamily: F, fontSize: 13, color: colors.gray[400], display: 'block' } as any}>
+                {periodLabel}
               </span>
-              <span style={{ fontFamily: F, fontSize: 24, fontWeight: 800, color: colors.gray[900], display: 'block', letterSpacing: -0.5 } as any}>
-                {metric === 'orders' ? (filterPeriod === '7d' ? '42' : filterPeriod === '30d' ? '186' : '524') :
-                 metric === 'revenue' ? (filterPeriod === '7d' ? '$23,100' : filterPeriod === '30d' ? '$124,800' : '$348,600') :
-                 metric === 'rating' ? (filterPeriod === '7d' ? '4.87' : filterPeriod === '30d' ? '4.82' : '4.79') :
-                 metric === 'conversion' ? (filterPeriod === '7d' ? '68%' : filterPeriod === '30d' ? '64%' : '61%') :
-                 metric === 'avgCheck' ? (filterPeriod === '7d' ? '$550' : filterPeriod === '30d' ? '$670' : '$665') :
-                 metric === 'onTime' ? (filterPeriod === '7d' ? '96%' : filterPeriod === '30d' ? '94%' : '93%') :
-                 metric === 'cancellation' ? (filterPeriod === '7d' ? '2.1%' : filterPeriod === '30d' ? '3.2%' : '3.5%') :
-                 (filterPeriod === '7d' ? '3.8h' : filterPeriod === '30d' ? '4.2h' : '4.0h')}
+              <span style={{ fontFamily: F, fontSize: 28, fontWeight: 800, color: colors.gray[900], display: 'block', letterSpacing: -0.5, marginTop: 2 } as any}>
+                {summaryValue}
               </span>
             </div>
             <span style={{
               fontFamily: F, fontSize: 12, fontWeight: 600, color: colors.success[500],
-              backgroundColor: colors.success[50], padding: '4px 10px', borderRadius: 8,
+              backgroundColor: colors.success[50], padding: '6px 12px', borderRadius: 10,
             } as any}>
               ↑ Trending
             </span>
           </div>
         </div>
 
-        {/* Table header */}
-        <div style={{
-          display: 'flex', padding: '10px 14px', backgroundColor: '#EFF2F7',
-          borderRadius: '12px 12px 0 0', gap: 4,
-        } as any}>
-          {data.columns.map((col, i) => (
-            <span key={i} style={{
-              fontFamily: F, fontSize: 11, fontWeight: 700, color: colors.gray[500],
-              flex: i === 0 ? '0 0 60px' : 1, textTransform: 'uppercase', letterSpacing: 0.3,
-            } as any}>
-              {col}
-            </span>
-          ))}
-        </div>
-
-        {/* Table rows */}
-        {data.rows.map((row, ri) => (
-          <div key={ri} style={{
-            display: 'flex', padding: '12px 14px', gap: 4,
-            backgroundColor: '#FFFFFF',
-            borderRadius: ri === data.rows.length - 1 ? '0 0 12px 12px' : 0,
-          } as any}>
-            {row.map((cell, ci) => (
-              <span key={ci} style={{
-                fontFamily: F, fontSize: 13, fontWeight: ci === 0 ? 600 : 400,
-                color: cell === 'Completed' ? colors.success[500] :
-                       cell === 'In Progress' ? colors.primary[500] :
-                       cell === 'Cancelled' ? colors.error[500] :
-                       cell.startsWith('⭐') ? colors.warning[600] :
-                       cell.startsWith('↑') ? colors.success[500] :
-                       cell.startsWith('↓') ? colors.error[500] :
-                       colors.gray[700],
-                flex: ci === 0 ? '0 0 60px' : 1,
-              } as any}>
-                {cell}
-              </span>
-            ))}
-          </div>
-        ))}
+        {/* Row List */}
+        {data.rows.map((row, i) => renderRow(row, i))}
       </div>
     </div>
   );
