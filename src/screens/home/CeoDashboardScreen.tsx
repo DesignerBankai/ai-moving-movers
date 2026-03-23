@@ -115,8 +115,8 @@ const TEAM_STATS = {
    ═══════════════════════════════════════════ */
 
 const BackIcon = () => (
-  <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-    <path d="M15 18L9 12L15 6" stroke={colors.gray[700]} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+  <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+    <path d="M15 18L9 12L15 6" stroke={colors.primary[500]} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"/>
   </svg>
 );
 
@@ -425,20 +425,22 @@ const DetailScreen: React.FC<{
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%', backgroundColor: '#F5F5F7' } as any}>
-      {/* ── Navigation Bar ── */}
+      {/* ── Navigation Bar (iOS HIG style) ── */}
       <div style={{
-        display: 'flex', alignItems: 'center', padding: '14px 16px', gap: 14,
-        backgroundColor: '#F5F5F7',
+        display: 'flex', alignItems: 'center', padding: '14px 16px',
+        backgroundColor: '#F5F5F7', position: 'relative', minHeight: 44,
       } as any}>
         <div onClick={onBack} style={{
-          width: 36, height: 36, borderRadius: 12,
-          backgroundColor: '#EFF2F7',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          cursor: 'pointer', flexShrink: 0,
+          display: 'flex', alignItems: 'center', cursor: 'pointer',
+          zIndex: 1,
         } as any}>
           <BackIcon />
         </div>
-        <span style={{ fontFamily: F, fontSize: 18, fontWeight: 700, color: colors.gray[900], flex: 1 } as any}>
+        <span style={{
+          fontFamily: F, fontSize: 17, fontWeight: 600, color: colors.gray[900],
+          position: 'absolute', left: 0, right: 0, textAlign: 'center',
+          pointerEvents: 'none',
+        } as any}>
           {config.title}
         </span>
       </div>
