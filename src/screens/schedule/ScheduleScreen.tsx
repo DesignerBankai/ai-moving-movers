@@ -44,6 +44,12 @@ export interface ScheduleMove {
   phone?: string;
   /** If this is the active move, its current step */
   step?: MoveStep;
+  /** Floor at pickup location */
+  floor?: number;
+  /** Whether elevator is available at pickup */
+  elevator?: boolean;
+  /** Distance between addresses e.g. "4.2 mi" */
+  distance?: string;
 }
 
 interface ScheduleScreenProps {
@@ -164,6 +170,50 @@ const ChevronRightSmall = () => (
   </svg>
 );
 
+const ArrowRightIcon = ({ color = colors.gray[400] }: { color?: string }) => (
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+    <path d="M5 12H19M19 12L13 6M19 12L13 18" stroke={color} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+  </svg>
+);
+
+const RoomsIcon = ({ color = colors.gray[400] }: { color?: string }) => (
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+    <path d="M3 21V7L12 3L21 7V21" stroke={color} strokeWidth="1.5" strokeLinejoin="round" />
+    <path d="M9 21V14H15V21" stroke={color} strokeWidth="1.5" strokeLinejoin="round" />
+  </svg>
+);
+
+const FloorIcon = ({ color = colors.gray[400] }: { color?: string }) => (
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+    <rect x="4" y="2" width="16" height="20" rx="2" stroke={color} strokeWidth="1.5" />
+    <path d="M4 8H20M4 14H20" stroke={color} strokeWidth="1.2" />
+    <path d="M12 2V22" stroke={color} strokeWidth="1.2" />
+  </svg>
+);
+
+const DistanceIcon = ({ color = colors.gray[400] }: { color?: string }) => (
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+    <path d="M3 12H21" stroke={color} strokeWidth="1.5" strokeLinecap="round" />
+    <path d="M3 12L7 8M3 12L7 16" stroke={color} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+    <path d="M21 12L17 8M21 12L17 16" stroke={color} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+  </svg>
+);
+
+const ElevatorIcon = ({ color = colors.gray[400] }: { color?: string }) => (
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+    <rect x="3" y="2" width="18" height="20" rx="2" stroke={color} strokeWidth="1.5" />
+    <path d="M12 6V18" stroke={color} strokeWidth="1.2" />
+    <path d="M8 10L12 6L16 10" stroke={color} strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" />
+    <path d="M8 14L12 18L16 14" stroke={color} strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" />
+  </svg>
+);
+
+const StairsIcon = ({ color = colors.error[500] }: { color?: string }) => (
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+    <path d="M4 20H8V16H12V12H16V8H20V4" stroke={color} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+  </svg>
+);
+
 /* ═══════════════════════════════════════════
    Screen
    ═══════════════════════════════════════════ */
@@ -278,7 +328,7 @@ export const ScheduleScreen: React.FC<ScheduleScreenProps> = ({
                   alignItems: 'center',
                   padding: '6px 6px 8px',
                   borderRadius: 14,
-                  backgroundColor: isSelected ? colors.primary[500] : 'transparent',
+                  backgroundColor: isSelected ? colors.primary[500] : '#F0F1F3',
                   border: isTodayDay && !isSelected ? `1.5px solid ${colors.primary[200]}` : '1.5px solid transparent',
                   minWidth: 44,
                   transition: 'all 0.2s ease',
@@ -405,18 +455,18 @@ export const ScheduleScreen: React.FC<ScheduleScreenProps> = ({
                     style={({ pressed }) => [pressed && { opacity: 0.9 }]}
                   >
                     <div style={{
-                      backgroundColor: isActive ? colors.primary[500] : '#F5F5F5',
+                      backgroundColor: isActive ? colors.primary[500] : '#F0F1F3',
                       borderRadius: 16,
                       padding: '14px 16px 16px',
                       opacity: isCompleted ? 0.6 : 1,
                       marginBottom: 4,
                     } as any}>
 
-                      {/* Top row: title + active badge */}
+                      {/* Top row: client name + status badge */}
                       <div style={{
                         display: 'flex', flexDirection: 'row',
                         alignItems: 'center', justifyContent: 'space-between',
-                        marginBottom: 8,
+                        marginBottom: 10,
                       } as any}>
                         <span style={{
                           fontFamily: F,
@@ -436,7 +486,7 @@ export const ScheduleScreen: React.FC<ScheduleScreenProps> = ({
                             <span style={{
                               fontFamily: F, fontSize: 11, fontWeight: 600,
                               color: colors.primary[500],
-                            } as any}>Active Task</span>
+                            } as any}>Active</span>
                           </div>
                         )}
                         {isCompleted && (
@@ -451,23 +501,133 @@ export const ScheduleScreen: React.FC<ScheduleScreenProps> = ({
                             } as any}>Completed</span>
                           </div>
                         )}
+                        {!isActive && !isCompleted && (
+                          <div style={{
+                            backgroundColor: isActive ? 'rgba(255,255,255,0.2)' : colors.primary[50],
+                            borderRadius: 8,
+                            padding: '4px 10px',
+                          } as any}>
+                            <span style={{
+                              fontFamily: F, fontSize: 11, fontWeight: 600,
+                              color: colors.primary[500],
+                            } as any}>Upcoming</span>
+                          </div>
+                        )}
                       </div>
 
-                      {/* Address */}
+                      {/* Addresses: from → to */}
                       <div style={{
                         display: 'flex', flexDirection: 'row', alignItems: 'center',
-                        gap: 6, marginBottom: isActive ? 10 : 0,
+                        gap: 6, marginBottom: 4,
                       } as any}>
                         <LocationPinIcon color={isActive ? 'rgba(255,255,255,0.7)' : colors.gray[400]} />
                         <span style={{
                           fontFamily: F, fontSize: 13, fontWeight: 500,
-                          color: isActive ? 'rgba(255,255,255,0.85)' : colors.gray[500],
+                          color: isActive ? 'rgba(255,255,255,0.85)' : colors.gray[600],
                         } as any}>{move.from}</span>
+                      </div>
+                      <div style={{
+                        display: 'flex', flexDirection: 'row', alignItems: 'center',
+                        gap: 6, marginBottom: 12,
+                        paddingLeft: 1,
+                      } as any}>
+                        <ArrowRightIcon color={isActive ? 'rgba(255,255,255,0.5)' : colors.gray[300]} />
+                        <span style={{
+                          fontFamily: F, fontSize: 13, fontWeight: 500,
+                          color: isActive ? 'rgba(255,255,255,0.85)' : colors.gray[600],
+                        } as any}>{move.to}</span>
+                      </div>
+
+                      {/* Info chips row */}
+                      <div style={{
+                        display: 'flex', flexDirection: 'row', flexWrap: 'wrap',
+                        gap: 6, marginBottom: isActive ? 10 : 0,
+                      } as any}>
+                        {/* Rooms chip */}
+                        <div style={{
+                          display: 'flex', flexDirection: 'row', alignItems: 'center', gap: 4,
+                          backgroundColor: isActive ? 'rgba(255,255,255,0.15)' : '#FFFFFF',
+                          borderRadius: 8, padding: '4px 10px',
+                        } as any}>
+                          <RoomsIcon color={isActive ? 'rgba(255,255,255,0.7)' : colors.gray[400]} />
+                          <span style={{
+                            fontFamily: F, fontSize: 12, fontWeight: 600,
+                            color: isActive ? 'rgba(255,255,255,0.9)' : colors.gray[600],
+                          } as any}>{move.rooms} room{move.rooms > 1 ? 's' : ''}</span>
+                        </div>
+
+                        {/* Floor chip */}
+                        {move.floor != null && (
+                          <div style={{
+                            display: 'flex', flexDirection: 'row', alignItems: 'center', gap: 4,
+                            backgroundColor: isActive ? 'rgba(255,255,255,0.15)' : '#FFFFFF',
+                            borderRadius: 8, padding: '4px 10px',
+                          } as any}>
+                            <FloorIcon color={isActive ? 'rgba(255,255,255,0.7)' : colors.gray[400]} />
+                            <span style={{
+                              fontFamily: F, fontSize: 12, fontWeight: 600,
+                              color: isActive ? 'rgba(255,255,255,0.9)' : colors.gray[600],
+                            } as any}>Floor {move.floor}</span>
+                          </div>
+                        )}
+
+                        {/* Elevator / No elevator chip */}
+                        {move.elevator != null && (
+                          <div style={{
+                            display: 'flex', flexDirection: 'row', alignItems: 'center', gap: 4,
+                            backgroundColor: isActive
+                              ? (move.elevator ? 'rgba(255,255,255,0.15)' : 'rgba(255,100,100,0.25)')
+                              : (move.elevator ? '#FFFFFF' : colors.error[50]),
+                            borderRadius: 8, padding: '4px 10px',
+                          } as any}>
+                            {move.elevator
+                              ? <ElevatorIcon color={isActive ? 'rgba(255,255,255,0.7)' : colors.gray[400]} />
+                              : <StairsIcon color={isActive ? 'rgba(255,200,200,0.9)' : colors.error[500]} />
+                            }
+                            <span style={{
+                              fontFamily: F, fontSize: 12, fontWeight: 600,
+                              color: isActive
+                                ? (move.elevator ? 'rgba(255,255,255,0.9)' : 'rgba(255,200,200,0.95)')
+                                : (move.elevator ? colors.gray[600] : colors.error[600]),
+                            } as any}>{move.elevator ? 'Elevator' : 'No elevator'}</span>
+                          </div>
+                        )}
+
+                        {/* Estimated time chip */}
+                        <div style={{
+                          display: 'flex', flexDirection: 'row', alignItems: 'center', gap: 4,
+                          backgroundColor: isActive ? 'rgba(255,255,255,0.15)' : '#FFFFFF',
+                          borderRadius: 8, padding: '4px 10px',
+                        } as any}>
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+                            <circle cx="12" cy="12" r="10" stroke={isActive ? 'rgba(255,255,255,0.7)' : colors.gray[400]} strokeWidth="1.5" />
+                            <path d="M12 6V12L16 14" stroke={isActive ? 'rgba(255,255,255,0.7)' : colors.gray[400]} strokeWidth="1.5" strokeLinecap="round" />
+                          </svg>
+                          <span style={{
+                            fontFamily: F, fontSize: 12, fontWeight: 600,
+                            color: isActive ? 'rgba(255,255,255,0.9)' : colors.gray[600],
+                          } as any}>~{move.estimatedHours}h</span>
+                        </div>
+
+                        {/* Distance chip */}
+                        {move.distance && (
+                          <div style={{
+                            display: 'flex', flexDirection: 'row', alignItems: 'center', gap: 4,
+                            backgroundColor: isActive ? 'rgba(255,255,255,0.15)' : '#FFFFFF',
+                            borderRadius: 8, padding: '4px 10px',
+                          } as any}>
+                            <DistanceIcon color={isActive ? 'rgba(255,255,255,0.7)' : colors.gray[400]} />
+                            <span style={{
+                              fontFamily: F, fontSize: 12, fontWeight: 600,
+                              color: isActive ? 'rgba(255,255,255,0.9)' : colors.gray[600],
+                            } as any}>{move.distance}</span>
+                          </div>
+                        )}
                       </div>
 
                       {/* Step dots (active only) — mini version of dashboard dots */}
                       {isActive && move.step && move.step !== 'completed' && (
-                        <div style={{ marginTop: 2 } as any}>
+                        <div style={{ marginTop: 4 } as any}>
                           {/* Step dots row */}
                           <div style={{
                             display: 'flex', flexDirection: 'row', alignItems: 'center',
@@ -553,23 +713,6 @@ export const ScheduleScreen: React.FC<ScheduleScreenProps> = ({
                               } as any}>Chat</span>
                             </div>
                           </Pressable>
-                        </div>
-                      )}
-
-                      {/* Upcoming meta */}
-                      {move.status === 'upcoming' && (
-                        <div style={{
-                          display: 'flex', flexDirection: 'row', alignItems: 'center',
-                          gap: 12, marginTop: 8,
-                        } as any}>
-                          <span style={{
-                            fontFamily: F, fontSize: 12, fontWeight: 500,
-                            color: colors.gray[400],
-                          } as any}>{move.rooms} room{move.rooms > 1 ? 's' : ''}</span>
-                          <span style={{
-                            fontFamily: F, fontSize: 12, fontWeight: 500,
-                            color: colors.gray[400],
-                          } as any}>~{move.estimatedHours}h</span>
                         </div>
                       )}
                     </div>
