@@ -292,16 +292,6 @@ export const PaymentMethodsScreen: React.FC<PaymentMethodsScreenProps> = ({
                   } as any}
                 >
                   <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12, flex: 1 }}>
-                    {/* Radio dot */}
-                    <View style={{
-                      width: 22, height: 22, borderRadius: 11,
-                      borderWidth: 2, borderColor: defaultMethod === 'bank' ? colors.primary[500] : colors.gray[300],
-                      alignItems: 'center', justifyContent: 'center',
-                    }}>
-                      {defaultMethod === 'bank' && (
-                        <View style={{ width: 12, height: 12, borderRadius: 6, backgroundColor: colors.primary[500] }} />
-                      )}
-                    </View>
                     {renderBankBuildingSVG()}
                     <View style={{ flexDirection: 'column', gap: 4 }}>
                       {Platform.OS === 'web' && (
@@ -357,18 +347,6 @@ export const PaymentMethodsScreen: React.FC<PaymentMethodsScreenProps> = ({
                   } as any}
                 >
                   <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12, flex: 1 }}>
-                    {/* Radio dot for CEO */}
-                    {role === 'ceo' && (
-                      <View style={{
-                        width: 22, height: 22, borderRadius: 11,
-                        borderWidth: 2, borderColor: isDefault ? colors.primary[500] : colors.gray[300],
-                        alignItems: 'center', justifyContent: 'center',
-                      }}>
-                        {isDefault && (
-                          <View style={{ width: 12, height: 12, borderRadius: 6, backgroundColor: colors.primary[500] }} />
-                        )}
-                      </View>
-                    )}
                     {card.type === 'visa' ? renderVisaIcon() : renderMastercardIcon()}
                     <View style={{ flexDirection: 'column', gap: 4 }}>
                       {Platform.OS === 'web' && (
