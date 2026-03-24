@@ -632,19 +632,21 @@ export const CeoDashboardScreen: React.FC<CeoDashboardScreenProps> = ({
         transition: 'transform 0.15s ease',
       } as any}
     >
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' } as any}>
+      {/* Icon + Value + Chevron — one row */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 } as any}>
         <div style={{
           width: 36, height: 36, borderRadius: 12,
           backgroundColor: `${color}15`, display: 'flex', alignItems: 'center', justifyContent: 'center',
+          flexShrink: 0,
         } as any}>
           {icon}
         </div>
+        <span style={{ fontFamily: F, fontSize: 22, fontWeight: 800, color: colors.gray[900], flex: 1, letterSpacing: -0.5 } as any}>
+          {value}
+        </span>
         <ChevronRightIcon color={colors.gray[200]} />
       </div>
-      <span style={{ fontFamily: F, fontSize: 22, fontWeight: 800, color: colors.gray[900], display: 'block', letterSpacing: -0.5, marginTop: 10 } as any}>
-        {value}
-      </span>
-      <span style={{ fontFamily: F, fontSize: 12, fontWeight: 500, color: colors.gray[400], display: 'block', marginTop: 2 } as any}>
+      <span style={{ fontFamily: F, fontSize: 12, fontWeight: 500, color: colors.gray[400], display: 'block' } as any}>
         {label}
       </span>
       {sub && (
