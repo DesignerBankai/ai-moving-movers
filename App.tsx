@@ -69,6 +69,8 @@ import { NotificationsScreen } from './src/screens/profile/NotificationsScreen';
 import { HelpSupportScreen } from './src/screens/profile/HelpSupportScreen';
 import { LegalScreen } from './src/screens/profile/LegalScreen';
 import { SignOutModal } from './src/screens/profile/SignOutModal';
+import { CompanyInfoScreen } from './src/screens/profile/CompanyInfoScreen';
+import { ReportsExportScreen } from './src/screens/profile/ReportsExportScreen';
 import { ThemeProvider } from './src/design-system/ThemeContext';
 import { ContractSigningScreen } from './src/screens/contract/ContractSigningScreen';
 import { ContractsListScreen } from './src/screens/contract/ContractsListScreen';
@@ -123,7 +125,9 @@ type Screen =
   | 'legal'
   | 'schedule'
   | 'contracts'
-  | 'contractSigning';
+  | 'contractSigning'
+  | 'companyInfo'
+  | 'reportsExport';
 
 // Screen order for determining slide direction
 const SCREEN_ORDER: Screen[] = [
@@ -1368,9 +1372,11 @@ export default function App() {
               } else {
                 const screenMap: Record<string, Screen> = {
                   personalInfo: 'personalInfo',
+                  companyInfo: 'companyInfo',
                   paymentMethods: 'paymentMethods',
                   savedAddresses: 'savedAddresses',
                   moveHistory: 'moveHistory',
+                  reportsExport: 'reportsExport',
                   contracts: 'contracts',
                   notifications: 'notifications',
                   helpSupport: 'helpSupport',
@@ -1404,6 +1410,12 @@ export default function App() {
             onBack={() => navigateTo('profile')}
           />
         );
+      case 'companyInfo':
+        return (
+          <CompanyInfoScreen
+            onBack={() => navigateTo('profile')}
+          />
+        );
       case 'paymentMethods':
         return (
           <PaymentMethodsScreen
@@ -1412,6 +1424,7 @@ export default function App() {
               { id: 'c2', type: 'mastercard', last4: '8831', expiry: '03/26', isDefault: false, holderName: contactData?.fullName || 'Dmitriy' },
             ]}
             onBack={() => navigateTo('profile')}
+            role={userRole || undefined}
           />
         );
       case 'savedAddresses':
@@ -1431,6 +1444,13 @@ export default function App() {
               { id: 'h1', status: 'completed', fromAddress: '123 Main St, Apt 4', toAddress: '456 Oak Ave, Unit 2', date: 'Jan 15, 2026', moverName: 'Sarah Johnson', moverRating: 5, crewSize: 3, totalPrice: 1340, duration: '4h 25m', roomsCount: 4, itemsCount: 47, volume: '380 cu ft' },
               { id: 'h2', status: 'cancelled', fromAddress: '789 Pine Rd', toAddress: '321 Elm St', date: 'Dec 5, 2025', moverName: 'Mike Chen', moverRating: 4, crewSize: 2, totalPrice: 980, duration: '-', roomsCount: 3, itemsCount: 28, volume: '220 cu ft' },
             ]}
+            onBack={() => navigateTo('profile')}
+            role={userRole || undefined}
+          />
+        );
+      case 'reportsExport':
+        return (
+          <ReportsExportScreen
             onBack={() => navigateTo('profile')}
           />
         );
