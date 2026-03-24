@@ -302,9 +302,9 @@ const InfoRow = ({ icon, text }: { icon: React.ReactNode; text: string }) => (
   </div>
 );
 
-const shortCity = (addr: string) => {
+const shortAddr = (addr: string) => {
   const parts = addr.split(',');
-  return parts.length >= 2 ? parts[1].trim() : parts[0].trim();
+  return parts[0].trim();
 };
 
 /* ═══════════════════════════════════════════
@@ -367,26 +367,35 @@ const ListView: React.FC<{
     </Pressable>
   );
 
-  const StatItem = ({ number, label }: { number: string | number; label: string }) => (
-    <div style={{ display: 'flex', flexDirection: 'column' as const, alignItems: 'flex-start' } as any}>
-      <span style={{
-        fontFamily: F,
-        fontSize: 20,
-        fontWeight: 700,
-        color: colors.gray[900],
-        letterSpacing: -0.4,
-      } as any}>
-        {number}
-      </span>
+  const StatCard = ({ number, label, accent }: { number: string | number; label: string; accent?: boolean }) => (
+    <div style={{
+      flex: 1,
+      backgroundColor: '#FFFFFF',
+      borderRadius: 16,
+      padding: 16,
+      display: 'flex',
+      flexDirection: 'column' as const,
+    } as any}>
       <span style={{
         fontFamily: F,
         fontSize: 12,
         fontWeight: 500,
         color: colors.gray[400],
         letterSpacing: -0.24,
-        marginTop: 4,
+        display: 'block',
+        marginBottom: 8,
       } as any}>
         {label}
+      </span>
+      <span style={{
+        fontFamily: F,
+        fontSize: 26,
+        fontWeight: 800,
+        color: accent ? colors.primary[500] : colors.gray[900],
+        letterSpacing: -0.8,
+        display: 'block',
+      } as any}>
+        {number}
       </span>
     </div>
   );
@@ -397,22 +406,29 @@ const ListView: React.FC<{
       <Navbar title="Move History" onBack={onBack} />
 
       <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false} contentContainerStyle={{ padding: 16, paddingBottom: 40 }}>
-        {/* CEO Stats Summary Card */}
+        {/* CEO Stats Summary */}
         {role === 'ceo' && filteredMoves.length > 0 && (
-          <div style={{
-            backgroundColor: '#FFFFFF',
-            borderRadius: 16,
-            padding: 16,
-            display: 'flex',
-            flexDirection: 'row' as const,
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            marginBottom: 16,
-          } as any}>
-            <StatItem number={totalMoves} label="Total Moves" />
-            <StatItem number={`$${totalRevenue.toLocaleString()}`} label="Total Revenue" />
-            <StatItem number={`$${avgPrice.toLocaleString()}`} label="Avg Price" />
-          </div>
+          <>
+            {/* Revenue hero */}
+            <div style={{
+              backgroundColor: '#FFFFFF',
+              borderRadius: 16,
+              padding: 20,
+              marginBottom: 10,
+            } as any}>
+              <span style={{ fontFamily: F, fontSize: 13, fontWeight: 500, color: colors.gray[400], display: 'block', marginBottom: 8 } as any}>
+                Total Revenue
+              </span>
+              <span style={{ fontFamily: F, fontSize: 34, fontWeight: 800, color: colors.gray[900], display: 'block', letterSpacing: -1 } as any}>
+                ${totalRevenue.toLocaleString()}
+              </span>
+            </div>
+            {/* Metrics row */}
+            <div style={{ display: 'flex', flexDirection: 'row' as const, gap: 10, marginBottom: 16 } as any}>
+              <StatCard number={totalMoves} label="Total Moves" />
+              <StatCard number={`$${avgPrice.toLocaleString()}`} label="Avg Price" accent />
+            </div>
+          </>
         )}
 
         {/* CEO Status Filter Chips */}
@@ -484,18 +500,9 @@ const ListView: React.FC<{
                   </div>
 
                   {/* Info rows */}
-                  <InfoRow icon={<IconTruck />} text={`${shortCity(move.fromAddress)} → ${shortCity(move.toAddress)}`} />
+                  <InfoRow icon={<IconTruck />} text={`${shortAddr(move.fromAddress)} → ${shortAddr(move.toAddress)}`} />
                   <InfoRow icon={<IconCalendar />} text={move.date} />
-                  {role === 'ceo' ? (
-                    <div style={{ display: 'flex', flexDirection: 'row' as const, alignItems: 'center', gap: 10, marginTop: 10 } as any}>
-                      <IconUser />
-                      <span style={{ fontFamily: F, fontSize: 13, fontWeight: 400, color: colors.gray[500], letterSpacing: -0.26 } as any}>
-                        Mover: {move.moverName}
-                      </span>
-                    </div>
-                  ) : (
-                    <InfoRow icon={<IconUser />} text={move.moverName} />
-                  )}
+                  <InfoRow icon={<IconUser />} text={role === 'ceo' ? `Mover: ${move.moverName}` : move.moverName} />
 
                   {/* Separator + bottom */}
                   <div style={{
