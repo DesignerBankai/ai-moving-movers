@@ -76,6 +76,7 @@ import { ContractsListScreen } from './src/screens/contract/ContractsListScreen'
 import { createContract, type SignedContract, type ContractSignature, type InventoryItem } from './src/screens/contract/ContractGenerator';
 import { RoleSelectionScreen, UserRole } from './src/screens/auth/RoleSelectionScreen';
 import { CeoDashboardScreen } from './src/screens/home/CeoDashboardScreen';
+import { SalesDashboardScreen } from './src/screens/home/SalesDashboardScreen';
 import { ScheduleScreen, ScheduleMove } from './src/screens/schedule/ScheduleScreen';
 
 type Screen =
@@ -125,7 +126,8 @@ type Screen =
   | 'schedule'
   | 'contracts'
   | 'contractSigning'
-  | 'companyInfo';
+  | 'companyInfo'
+  | 'salesDashboard';
 
 // Screen order for determining slide direction
 const SCREEN_ORDER: Screen[] = [
@@ -771,7 +773,7 @@ export default function App() {
               if (role === 'mover') {
                 navigateTo('schedule');
               } else if (role === 'sales') {
-                navigateTo('orders');
+                navigateTo('salesDashboard');
               } else {
                 navigateTo('dashboard');
               }
@@ -1092,6 +1094,18 @@ export default function App() {
             role={userRole || undefined}
           />
         );
+      case 'salesDashboard':
+        return (
+          <SalesDashboardScreen
+            onTabPress={(tab) => {
+              if (tab === 'chat') navigateTo('chatList');
+              else if (tab === 'myMoves') navigateTo('orders');
+              else if (tab === 'schedule') navigateTo('schedule');
+              else if (tab === 'profile') navigateTo('profile');
+            }}
+            onBack={() => navigateTo('roleSelect')}
+          />
+        );
       case 'moveDetail':
         return activeMoveDetail ? (
           <MoveDetailScreen
@@ -1117,7 +1131,7 @@ export default function App() {
           <ScheduleScreen
             movesByDate={mockScheduleMoves}
             onTabPress={(tab) => {
-              if (tab === 'dashboard') navigateTo('dashboard');
+              if (tab === 'dashboard') navigateTo(userRole === 'sales' ? 'salesDashboard' : 'dashboard');
               else if (tab === 'schedule') { /* already here */ }
               else if (tab === 'chat') navigateTo('chatList');
               else if (tab === 'profile') navigateTo('profile');
@@ -1142,7 +1156,7 @@ export default function App() {
             requests={mockRequests}
             orders={mockOrders}
             onTabPress={(tab) => {
-              if (tab === 'dashboard') navigateTo('dashboard');
+              if (tab === 'dashboard') navigateTo(userRole === 'sales' ? 'salesDashboard' : 'dashboard');
               else if (tab === 'schedule') navigateTo('schedule');
               else if (tab === 'chat') navigateTo('chatList');
               else if (tab === 'profile') navigateTo('profile');
@@ -1270,7 +1284,7 @@ export default function App() {
               navigateTo('chat');
             }}
             onTabPress={(tab) => {
-              if (tab === 'dashboard') navigateTo('dashboard');
+              if (tab === 'dashboard') navigateTo(userRole === 'sales' ? 'salesDashboard' : 'dashboard');
               else if (tab === 'schedule') navigateTo('schedule');
               else if (tab === 'chat') navigateTo('chatList');
               else if (tab === 'myMoves') navigateTo('orders');
@@ -1297,7 +1311,7 @@ export default function App() {
           : (homePhase === 'confirmed' && selectedMover) ? 'booked' as const
           : 'searching' as const;
         const moveTabPress = (tab: any) => {
-          if (tab === 'dashboard') navigateTo('dashboard');
+          if (tab === 'dashboard') navigateTo(userRole === 'sales' ? 'salesDashboard' : 'dashboard');
           else if (tab === 'schedule') navigateTo('schedule');
               else if (tab === 'chat') navigateTo('chatList');
           else if (tab === 'profile') navigateTo('profile');
@@ -1384,7 +1398,7 @@ export default function App() {
               }
             }}
             onTabPress={(tab) => {
-              if (tab === 'dashboard') navigateTo('dashboard');
+              if (tab === 'dashboard') navigateTo(userRole === 'sales' ? 'salesDashboard' : 'dashboard');
               else if (tab === 'schedule') navigateTo('schedule');
               else if (tab === 'chat') navigateTo('chatList');
               else if (tab === 'myMoves') navigateTo('orders');
@@ -1586,7 +1600,7 @@ export default function App() {
   })();
 
   const handleSidebarTab = (tab: TabId) => {
-    if (tab === 'dashboard') navigateTo('dashboard');
+    if (tab === 'dashboard') navigateTo(userRole === 'sales' ? 'salesDashboard' : 'dashboard');
     else if (tab === 'schedule') navigateTo('schedule');
               else if (tab === 'chat') navigateTo('chatList');
     else if (tab === 'myMoves') navigateTo('orders');

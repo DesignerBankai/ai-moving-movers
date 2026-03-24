@@ -341,7 +341,7 @@ const TabItem: React.FC<{
 /** Tabs visible per role */
 const ROLE_TABS: Record<AppRole, TabId[]> = {
   mover: ['schedule', 'chat', 'profile'],
-  sales: ['myMoves', 'chat', 'profile'],
+  sales: ['dashboard', 'myMoves', 'chat', 'profile'],
   ceo: ['dashboard', 'myMoves', 'chat', 'profile'],
 };
 
