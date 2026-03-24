@@ -22,12 +22,92 @@ import { StatusBarMock } from '../../design-system';
 import { colors } from '../../design-system/tokens/colors';
 import { fontFamily } from '../../design-system/tokens/typography';
 import { TabBar, TabId } from './TabBar';
+import { MoveDetailScreen as MoveDetailScreenBase, MoveDetailData } from '../move/MoveDetailScreen';
 
 const F = fontFamily.primary;
 
 /* Semantic accent colors */
 const ACCENT_PURPLE = '#7C3AED';
 const ACCENT_ORANGE = '#F59E0B';
+
+interface SalesDealData {
+  client: string; route: string; amount: number; rooms: number;
+  date: string; status: string;
+  distance: string; duration: string; crew: number;
+  clientPhone: string; notes: string;
+}
+
+const generateSalesRooms = (roomCount: number): import('../move/MoveDetailScreen').RoomInventory[] => {
+  const templates: import('../move/MoveDetailScreen').RoomInventory[] = [
+    { name: 'Living Room', icon: 'living', items: [
+      { name: 'Sofa', qty: 1, tag: 'Large' }, { name: 'Coffee Table', qty: 1 },
+      { name: 'TV Stand', qty: 1 }, { name: 'Bookshelf', qty: 1, tag: 'Large' },
+      { name: 'Boxes', qty: 8 }, { name: 'Lamp', qty: 2 },
+    ]},
+    { name: 'Master Bedroom', icon: 'bedroom', items: [
+      { name: 'Queen Bed Frame', qty: 1, tag: 'Large' }, { name: 'Mattress', qty: 1, tag: 'Large' },
+      { name: 'Dresser', qty: 1 }, { name: 'Nightstand', qty: 2 },
+      { name: 'Boxes', qty: 6 }, { name: 'Mirror', qty: 1, tag: 'Fragile' },
+    ]},
+    { name: 'Kitchen', icon: 'kitchen', items: [
+      { name: 'Boxes (dishes)', qty: 5, tag: 'Fragile' }, { name: 'Boxes (cookware)', qty: 3 },
+      { name: 'Microwave', qty: 1 }, { name: 'Small Appliances', qty: 4 },
+    ]},
+    { name: 'Bedroom 2', icon: 'bedroom', items: [
+      { name: 'Twin Bed', qty: 1, tag: 'Large' }, { name: 'Desk', qty: 1 },
+      { name: 'Chair', qty: 1 }, { name: 'Boxes', qty: 4 },
+    ]},
+    { name: 'Office', icon: 'office', items: [
+      { name: 'Desk', qty: 1, tag: 'Large' }, { name: 'Office Chair', qty: 1 },
+      { name: 'Monitor', qty: 2, tag: 'Fragile' }, { name: 'Boxes', qty: 5 },
+    ]},
+  ];
+  return templates.slice(0, Math.min(roomCount, templates.length));
+};
+
+const dealToMoveDetail = (deal: SalesDealData): MoveDetailData => {
+  const fromTo = deal.route.split(' → ');
+  const rooms = generateSalesRooms(deal.rooms);
+  const totalItems = rooms.reduce((sum, r) => sum + r.items.reduce((s, it) => s + it.qty, 0), 0);
+  return {
+    id: `deal-${deal.date}-${deal.client}`,
+    client: deal.client,
+    from: fromTo[0] || '',
+    to: fromTo[1] || '',
+    date: deal.date,
+    time: '10:00 AM',
+    price: deal.amount,
+    step: deal.status === 'closed' ? 'completed' : 'accepted',
+    roomsCount: deal.rooms,
+    clientPhone: deal.clientPhone,
+    clientEmail: `${deal.client.toLowerCase().replace(/\s+/g, '.')}@email.com`,
+    fromApt: '',
+    fromFloor: '1',
+    fromElevator: true,
+    toApt: '',
+    toFloor: '1',
+    toElevator: true,
+    distance: deal.distance,
+    estimatedTime: `~${Math.round(parseFloat(deal.distance) * 2.5)} min`,
+    totalVolume: `${Math.round(deal.rooms * 120)} cu ft`,
+    totalItems,
+    rooms,
+    specialItems: [],
+    notes: deal.notes,
+    planName: deal.amount > 1200 ? 'Premium' : 'Standard',
+    depositPaid: Math.round(deal.amount * 0.2),
+    ...(deal.status === 'closed' ? {
+      moverInfo: { name: 'Alex M.', crewSize: deal.crew, rating: 4.8 },
+      actualDuration: deal.duration,
+      stageDurations: {
+        loading: `${Math.round(parseFloat(deal.duration) * 0.35 * 60)}m`,
+        driving: `${Math.round(parseFloat(deal.distance) * 2.5)}m`,
+        unloading: `${Math.round(parseFloat(deal.duration) * 0.30 * 60)}m`,
+      },
+      earningsSummary: { totalEarned: deal.amount, itemsMoved: totalItems },
+    } : {}),
+  } as MoveDetailData;
+};
 
 type SalesMetricKey = 'dealsClosed' | 'conversionRate' | 'proposalsSent' | 'avgDealSize' | 'salesRevenue';
 
@@ -269,12 +349,12 @@ const DATA = {
 };
 
 const RECENT_DEALS = [
-  { id: 1, client: 'Sarah Johnson', route: 'Hollywood → Pasadena', amount: 1850, status: 'closed', date: 'Mar 23', rooms: 3 },
-  { id: 2, client: 'Mike Chen', route: 'Venice → Beverly Hills', amount: 2100, status: 'closed', date: 'Mar 22', rooms: 4 },
-  { id: 3, client: 'Emma Wilson', route: 'Santa Monica → Westwood', amount: 980, status: 'proposal', date: 'Mar 22', rooms: 2 },
-  { id: 4, client: 'David Brown', route: 'Downtown → Koreatown', amount: 1450, status: 'negotiation', date: 'Mar 21', rooms: 3 },
-  { id: 5, client: 'Lisa Park', route: 'Burbank → Glendale', amount: 750, status: 'lost', date: 'Mar 20', rooms: 1 },
-  { id: 6, client: 'James Taylor', route: 'WeHo → Silver Lake', amount: 1200, status: 'closed', date: 'Mar 19', rooms: 2 },
+  { id: 1, client: 'Sarah Johnson', route: 'Hollywood → Pasadena', amount: 1850, status: 'closed', date: 'Mar 23', rooms: 3, distance: '12 mi', duration: '3.5h', crew: 2, clientPhone: '(310) 555-0142', notes: 'Fragile items in bedroom' },
+  { id: 2, client: 'Mike Chen', route: 'Venice → Beverly Hills', amount: 2100, status: 'closed', date: 'Mar 22', rooms: 4, distance: '8 mi', duration: '4.2h', crew: 3, clientPhone: '(310) 555-0198', notes: 'Large dining table' },
+  { id: 3, client: 'Emma Wilson', route: 'Santa Monica → Westwood', amount: 980, status: 'proposal', date: 'Mar 22', rooms: 2, distance: '5 mi', duration: '2.0h', crew: 2, clientPhone: '(424) 555-0267', notes: '' },
+  { id: 4, client: 'David Brown', route: 'Downtown → Koreatown', amount: 1450, status: 'negotiation', date: 'Mar 21', rooms: 3, distance: '6 mi', duration: '3.0h', crew: 2, clientPhone: '(213) 555-0334', notes: 'No elevator, 3rd floor' },
+  { id: 5, client: 'Lisa Park', route: 'Burbank → Glendale', amount: 750, status: 'lost', date: 'Mar 20', rooms: 1, distance: '4 mi', duration: '1.5h', crew: 2, clientPhone: '(818) 555-0523', notes: '' },
+  { id: 6, client: 'James Taylor', route: 'WeHo → Silver Lake', amount: 1200, status: 'closed', date: 'Mar 19', rooms: 2, distance: '7 mi', duration: '2.8h', crew: 2, clientPhone: '(424) 555-0789', notes: 'Parking tricky' },
 ];
 
 const SALES_NOTIFS = [
@@ -381,7 +461,8 @@ const ProposalStatusBadge = ({ status }: { status: string }) => {
 const SalesDetailScreen: React.FC<{
   metric: SalesMetricKey;
   onBack: () => void;
-}> = ({ metric, onBack }) => {
+  onDealPress?: (deal: SalesDealData) => void;
+}> = ({ metric, onBack, onDealPress }) => {
   const config = SALES_METRIC_CONFIG[metric];
   const data = SALES_DRILL_DOWN[metric];
   const [filterPeriod, setFilterPeriod] = useState<'7d' | '30d' | '90d'>('7d');
@@ -397,7 +478,7 @@ const SalesDetailScreen: React.FC<{
 
   const renderRow = (row: any, i: number) => {
     if (metric === 'dealsClosed') return (
-      <div key={i} style={{ backgroundColor: '#FFFFFF', borderRadius: 16, padding: '14px 16px', marginBottom: 8 } as any}>
+      <div key={i} className="sales-card-interactive" onClick={() => onDealPress?.({ client: row.client, route: row.route, amount: parseInt(row.amount.replace(/[$,]/g, '')), rooms: row.rooms, date: row.date, status: 'closed', distance: '10 mi', duration: '3.5h', crew: 2, clientPhone: '(310) 555-0100', notes: '' })} style={{ backgroundColor: '#FFFFFF', borderRadius: 16, padding: '14px 16px', marginBottom: 8, cursor: 'pointer' } as any}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 } as any}>
           <span style={{ fontFamily: F, fontSize: 15, fontWeight: 600, color: colors.gray[900] } as any}>{row.client}</span>
           <span style={{ fontFamily: F, fontSize: 15, fontWeight: 700, color: colors.gray[900] } as any}>{row.amount}</span>
@@ -422,8 +503,10 @@ const SalesDetailScreen: React.FC<{
         <span style={{ fontFamily: F, fontSize: 12, color: colors.gray[400], display: 'block', marginTop: 6 } as any}>Source: {row.source}</span>
       </div>
     );
-    if (metric === 'proposalsSent') return (
-      <div key={i} style={{ backgroundColor: '#FFFFFF', borderRadius: 16, padding: '14px 16px', marginBottom: 8 } as any}>
+    if (metric === 'proposalsSent') {
+      const isClickable = row.status === 'Accepted' && onDealPress;
+      return (
+      <div key={i} className={isClickable ? 'sales-card-interactive' : undefined} onClick={isClickable ? () => onDealPress({ client: row.client, route: row.route, amount: parseInt(row.amount.replace(/[$,]/g, '')), rooms: row.rooms, date: row.date, status: 'closed', distance: '8 mi', duration: '3.0h', crew: 2, clientPhone: '(310) 555-0100', notes: '' }) : undefined} style={{ backgroundColor: '#FFFFFF', borderRadius: 16, padding: '14px 16px', marginBottom: 8, ...(isClickable ? { cursor: 'pointer' } : {}) } as any}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 } as any}>
           <span style={{ fontFamily: F, fontSize: 15, fontWeight: 600, color: colors.gray[900] } as any}>{row.client}</span>
           <ProposalStatusBadge status={row.status} />
@@ -434,7 +517,8 @@ const SalesDetailScreen: React.FC<{
         </div>
         <span style={{ fontFamily: F, fontSize: 12, color: colors.gray[400], display: 'block', marginTop: 6 } as any}>{row.date} · {row.rooms} rooms</span>
       </div>
-    );
+    );}
+
     if (metric === 'avgDealSize') return (
       <div key={i} style={{ backgroundColor: '#FFFFFF', borderRadius: 16, padding: '14px 16px', marginBottom: 8 } as any}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 } as any}>
@@ -735,6 +819,7 @@ export const SalesDashboardScreen: React.FC<SalesDashboardScreenProps> = ({
   const [notifVisible, setNotifVisible] = useState(false);
   const [selectedChartBar, setSelectedChartBar] = useState<number | null>(null);
   const [drillDown, setDrillDown] = useState<SalesMetricKey | null>(null);
+  const [selectedDeal, setSelectedDeal] = useState<SalesDealData | null>(null);
 
   useEffect(() => { injectAnimationCSS(); }, []);
 
@@ -778,12 +863,18 @@ export const SalesDashboardScreen: React.FC<SalesDashboardScreenProps> = ({
   );
 
   return (
-    <SafeAreaView style={[s.safeArea, drillDown && { backgroundColor: '#F5F5F7' }]}>
-      <View style={[s.container, drillDown && { backgroundColor: '#F5F5F7' }]}>
+    <SafeAreaView style={[s.safeArea, (drillDown || selectedDeal) && { backgroundColor: '#F5F5F7' }]}>
+      <View style={[s.container, (drillDown || selectedDeal) && { backgroundColor: '#F5F5F7' }]}>
         <StatusBarMock onTimeTap={onBack} />
 
-        {drillDown ? (
-          <SalesDetailScreen metric={drillDown} onBack={() => setDrillDown(null)} />
+        {selectedDeal ? (
+          <MoveDetailScreenBase
+            move={dealToMoveDetail(selectedDeal)}
+            role="sales"
+            onBack={() => setSelectedDeal(null)}
+          />
+        ) : drillDown ? (
+          <SalesDetailScreen metric={drillDown} onBack={() => setDrillDown(null)} onDealPress={(deal) => setSelectedDeal(deal)} />
         ) : (
         <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false}>
           <div style={{ padding: '12px 16px 120px' } as any}>
@@ -957,6 +1048,7 @@ export const SalesDashboardScreen: React.FC<SalesDashboardScreenProps> = ({
                 <StaggerItem key={deal.id} index={i}>
                 <div
                   className="sales-deal-row"
+                  onClick={() => setSelectedDeal({ client: deal.client, route: deal.route, amount: deal.amount, rooms: deal.rooms, date: deal.date, status: deal.status, distance: (deal as any).distance || '8 mi', duration: (deal as any).duration || '3h', crew: (deal as any).crew || 2, clientPhone: (deal as any).clientPhone || '(310) 555-0100', notes: (deal as any).notes || '' })}
                   style={{
                     padding: '12px 4px', cursor: 'pointer',
                     display: 'flex', flexDirection: 'row', alignItems: 'center', gap: 12,
