@@ -1511,6 +1511,7 @@ export const CeoDashboardScreen: React.FC<CeoDashboardScreenProps> = ({
   const [selectedJob, setSelectedJob] = useState<{ job: JobData; moverName: string } | null>(null);
   const [selectedChartBar, setSelectedChartBar] = useState<number | null>(null);
   const [notifVisible, setNotifVisible] = useState(false);
+  const [showAllActive, setShowAllActive] = useState(false);
 
   /* Inject animation CSS on mount */
   useEffect(() => { injectAnimationCSS(); }, []);
@@ -1620,10 +1621,16 @@ export const CeoDashboardScreen: React.FC<CeoDashboardScreenProps> = ({
                 </div>
 
                 {/* ── Active Moves (mover-style active move card — 1:1) ── */}
-                {[
-                  { id: 'am1', client: 'Mike Robinson', from: '742 S Hill St, Los Angeles, CA', to: '1847 Ocean Ave, Santa Monica, CA', date: 'Mar 24', time: '9:00 AM', rooms: 3, price: 1280, step: 'loading' as const, stepIdx: 3, mover: 'Alex M.' },
-                  { id: 'am2', client: 'Kevin Thompson', from: '456 N Vermont Ave, Los Angeles', to: '2100 Los Feliz Blvd, Los Angeles', date: 'Mar 24', time: '10:30 AM', rooms: 2, price: 890, step: 'en_route_pickup' as const, stepIdx: 1, mover: 'Marcus T.' },
-                ].map((move) => {
+                {(() => {
+                  const ACTIVE_MOVES = [
+                    { id: 'am1', client: 'Mike Robinson', from: '742 S Hill St, Los Angeles, CA', to: '1847 Ocean Ave, Santa Monica, CA', date: 'Mar 24', time: '9:00 AM', rooms: 3, price: 1280, step: 'loading' as const, stepIdx: 3, mover: 'Alex M.' },
+                    { id: 'am2', client: 'Kevin Thompson', from: '456 N Vermont Ave, Los Angeles', to: '2100 Los Feliz Blvd, Los Angeles', date: 'Mar 24', time: '10:30 AM', rooms: 2, price: 890, step: 'en_route_pickup' as const, stepIdx: 1, mover: 'Marcus T.' },
+                  ];
+                  const visibleMoves = showAllActive ? ACTIVE_MOVES : ACTIVE_MOVES.slice(0, 1);
+                  const hiddenCount = ACTIVE_MOVES.length - 1;
+                  return (
+                    <>
+                      {visibleMoves.map((move) => {
                   const STEPS = ['accepted', 'en_route_pickup', 'arrived_pickup', 'loading', 'en_route_delivery', 'arrived_delivery', 'unloading', 'completed'];
                   const STEP_LABELS_MAP: Record<string, string> = {
                     accepted: 'Order accepted', en_route_pickup: 'En route to pickup', arrived_pickup: 'Arrived at pickup',
@@ -1720,6 +1727,23 @@ export const CeoDashboardScreen: React.FC<CeoDashboardScreenProps> = ({
                     </div>
                   );
                 })}
+                      {!showAllActive && hiddenCount > 0 && (
+                        <div
+                          onClick={() => setShowAllActive(true)}
+                          style={{
+                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                            padding: '12px', marginBottom: 12, borderRadius: 14,
+                            backgroundColor: '#FFFFFF', cursor: 'pointer',
+                          } as any}
+                        >
+                          <span style={{ fontFamily: F, fontSize: 14, fontWeight: 600, color: colors.primary[500], letterSpacing: -0.28 } as any}>
+                            +{hiddenCount} more active {hiddenCount === 1 ? 'move' : 'moves'}
+                          </span>
+                        </div>
+                      )}
+                    </>
+                  );
+                })()}
 
                 {/* ── Revenue Hero Card (white, no gradient) ── */}
                 <div
