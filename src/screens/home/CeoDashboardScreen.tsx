@@ -24,6 +24,7 @@ import { StatusBarMock } from '../../design-system';
 import { colors } from '../../design-system/tokens/colors';
 import { fontFamily } from '../../design-system/tokens/typography';
 import { TabBar, TabId } from './TabBar';
+import { MoveDetailScreen as MoveDetailScreenBase, MoveDetailData } from '../move/MoveDetailScreen';
 
 const F = fontFamily.primary;
 
@@ -945,255 +946,40 @@ const MoverDetailScreen: React.FC<{
 };
 
 /* ═══════════════════════════════════════════
-   Job Detail Screen (move detail from employee)
+   Job Detail — reuses actual MoveDetailScreen
    ═══════════════════════════════════════════ */
 
-/* ── Sub-components matching MoveDetailScreen exactly ── */
-
-const JobSectionHeader = ({ label }: { label: string }) => (
-  <div style={{ paddingTop: 16, paddingBottom: 6, paddingLeft: 16, paddingRight: 16 } as any}>
-    <span style={{ fontFamily: F, fontSize: 13, fontWeight: 600, color: colors.gray[400], textTransform: 'uppercase' as const, letterSpacing: 0.8 } as any}>{label}</span>
-  </div>
-);
-
-const JobRow: React.FC<{
-  icon: React.ReactNode; label: string; sub?: string;
-  value?: string; chip?: string; chipColor?: string; last?: boolean; first?: boolean;
-}> = ({ icon, label, sub, value, chip, chipColor, last, first }) => (
-  <div style={{
-    display: 'flex', flexDirection: 'row' as const, alignItems: 'center',
-    paddingTop: first ? 16 : 14, paddingBottom: last ? 16 : 14,
-    paddingLeft: 16, paddingRight: 16, gap: 14, boxSizing: 'border-box' as const,
-  } as any}>
-    <div style={{
-      width: 44, height: 44, minWidth: 44, borderRadius: 12,
-      backgroundColor: '#EFF2F7', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
-    } as any}>
-      {icon}
-    </div>
-    <div style={{ flex: 1, minWidth: 0, overflow: 'hidden' } as any}>
-      <span style={{ fontFamily: F, fontSize: 16, fontWeight: 600, color: colors.gray[900], display: 'block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' } as any}>{label}</span>
-      {sub && <span style={{ fontFamily: F, fontSize: 14, color: colors.gray[400], marginTop: 2, display: 'block' } as any}>{sub}</span>}
-    </div>
-    {chip && (
-      <div style={{ backgroundColor: chipColor || '#EFF2F7', borderRadius: 8, paddingTop: 5, paddingBottom: 5, paddingLeft: 12, paddingRight: 12, flexShrink: 0 } as any}>
-        <span style={{ fontFamily: F, fontSize: 14, fontWeight: 600, color: chipColor ? '#fff' : colors.gray[600], whiteSpace: 'nowrap' } as any}>{chip}</span>
-      </div>
-    )}
-    {value && !chip && <span style={{ fontFamily: F, fontSize: 15, fontWeight: 600, color: colors.gray[500], flexShrink: 0, textAlign: 'right' as const, whiteSpace: 'nowrap' } as any}>{value}</span>}
-  </div>
-);
-
-/* Step names for completed move */
-const JOB_STEPS = ['Accepted', 'En Route', 'At Pickup', 'Loading', 'En Route', 'At Drop-off', 'Unloading', 'Completed'];
-
-const JobDetailScreen: React.FC<{
-  job: JobData;
-  moverName: string;
-  onBack: () => void;
-}> = ({ job, moverName, onBack }) => {
-  const isCompleted = job.status === 'Completed';
-  const stepIdx = isCompleted ? JOB_STEPS.length - 1 : 0;
+/** Convert CEO dashboard job data → MoveDetailData for the real screen */
+const jobToMoveDetail = (job: JobData, moverName: string): MoveDetailData => {
   const fromTo = job.route.split(' → ');
-  const from = fromTo[0] || '';
-  const to = fromTo[1] || '';
-
-  const dotBlue = <div style={{ width: 12, height: 12, borderRadius: '50%', backgroundColor: colors.primary[500], border: `2.5px solid ${colors.primary[200]}` } as any}/>;
-  const dotRed  = <div style={{ width: 12, height: 12, borderRadius: 3, backgroundColor: colors.error[500], border: '2.5px solid #FECACA' } as any}/>;
-
-  const renderSteps = () => (
-    <div style={{ display: 'flex', flexDirection: 'row' as const, alignItems: 'center', paddingLeft: 16, paddingRight: 16, paddingTop: 4, paddingBottom: 12 } as any}>
-      {JOB_STEPS.map((_, i) => {
-        const done = i <= stepIdx;
-        return (
-          <React.Fragment key={i}>
-            <div style={{
-              width: 18, height: 18, borderRadius: 9,
-              backgroundColor: done ? '#10B981' : '#E4E7EC',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-            } as any}>
-              {done && (
-                <svg width="10" height="10" viewBox="0 0 24 24" fill="#FFF">
-                  <path d="M5 12L10 17L19 7" stroke="#FFF" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/>
-                </svg>
-              )}
-            </div>
-            {i < JOB_STEPS.length - 1 && (
-              <div style={{ flex: 1, height: 2, backgroundColor: i < stepIdx ? '#10B981' : '#E4E7EC', marginLeft: 2, marginRight: 2 } as any} />
-            )}
-          </React.Fragment>
-        );
-      })}
-    </div>
-  );
-
-  return (
-    <AnimatedPage direction="right" duration={0.3}>
-    <div style={{ display: 'flex', flexDirection: 'column', height: '100%', backgroundColor: '#FAFAFA' } as any}>
-      {/* Nav bar */}
-      <div style={{
-        display: 'flex', alignItems: 'center', padding: '14px 16px',
-        backgroundColor: '#FAFAFA', position: 'relative', minHeight: 44,
-      } as any}>
-        <div onClick={onBack} style={{ display: 'flex', alignItems: 'center', cursor: 'pointer', zIndex: 1 } as any}>
-          <BackIcon />
-        </div>
-        <span style={{
-          fontFamily: F, fontSize: 17, fontWeight: 600, color: colors.gray[900],
-          position: 'absolute', left: 0, right: 0, textAlign: 'center', pointerEvents: 'none',
-        } as any}>
-          Order details
-        </span>
-      </div>
-
-      <div style={{ flex: 1, overflowY: 'auto' } as any}>
-        <div style={{ padding: '0 16px 48px' } as any}>
-
-          {/* ── STATUS + PROGRESS ── */}
-          <div style={{ backgroundColor: '#FFFFFF', borderRadius: 16, overflow: 'hidden', animation: 'scaleIn 0.35s cubic-bezier(0.22,1,0.36,1) both' } as any}>
-            <div style={{
-              display: 'flex', flexDirection: 'row' as const, alignItems: 'center',
-              paddingTop: 16, paddingBottom: 14, paddingLeft: 16, paddingRight: 16, gap: 12,
-            } as any}>
-              <div style={{
-                width: 44, height: 44, minWidth: 44, borderRadius: 12,
-                backgroundColor: isCompleted ? `${colors.success[500]}18` : `${colors.primary[500]}18`,
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-              } as any}>
-                <div style={{ width: 10, height: 10, borderRadius: 5, backgroundColor: isCompleted ? colors.success[500] : colors.primary[500] } as any} />
-              </div>
-              <div style={{ flex: 1 } as any}>
-                <span style={{ fontFamily: F, fontSize: 16, fontWeight: 600, color: colors.gray[900], display: 'block' } as any}>
-                  {isCompleted ? 'Move Completed' : 'Order Accepted'}
-                </span>
-                <span style={{ fontFamily: F, fontSize: 14, color: colors.gray[400], marginTop: 2, display: 'block' } as any}>
-                  Step {stepIdx + 1} of {JOB_STEPS.length}
-                </span>
-              </div>
-              <div style={{
-                backgroundColor: isCompleted ? colors.success[500] : colors.primary[500],
-                borderRadius: 8, paddingTop: 5, paddingBottom: 5, paddingLeft: 12, paddingRight: 12, flexShrink: 0,
-              } as any}>
-                <span style={{ fontFamily: F, fontSize: 14, fontWeight: 600, color: '#fff', whiteSpace: 'nowrap' } as any}>
-                  {isCompleted ? 'Done' : 'Active'}
-                </span>
-              </div>
-            </div>
-            {renderSteps()}
-          </div>
-
-          {/* ── EARNINGS (CEO-specific) ── */}
-          <div style={{ backgroundColor: '#FFFFFF', borderRadius: 16, overflow: 'hidden', marginTop: 10, animation: 'fadeInUp 0.4s cubic-bezier(0.22,1,0.36,1) 0.06s both' } as any}>
-            <JobSectionHeader label="Earnings" />
-            <JobRow
-              icon={<CardDollarIcon color={colors.primary[500]} size={22} />}
-              label={job.amount}
-              sub="Total charged"
-              first
-            />
-            <JobRow
-              icon={<StarIcon color={colors.warning[500]} size={20} />}
-              label={`${job.rating} / 5.0`}
-              sub="Client rating"
-              chip={parseFloat(job.rating) >= 4.8 ? 'Excellent' : 'Good'}
-              chipColor={parseFloat(job.rating) >= 4.8 ? colors.success[500] : colors.primary[500]}
-              last
-            />
-          </div>
-
-          {/* ── CLIENT ── */}
-          <div style={{ backgroundColor: '#FFFFFF', borderRadius: 16, overflow: 'hidden', marginTop: 10, animation: 'fadeInUp 0.4s cubic-bezier(0.22,1,0.36,1) 0.12s both' } as any}>
-            <JobSectionHeader label="Client" />
-            <div style={{
-              display: 'flex', flexDirection: 'row' as const, alignItems: 'center',
-              paddingTop: 14, paddingBottom: 14, paddingLeft: 16, paddingRight: 16, gap: 14,
-            } as any}>
-              <div style={{
-                width: 44, height: 44, minWidth: 44, borderRadius: '50%',
-                backgroundColor: colors.primary[50], display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
-              } as any}>
-                <span style={{ fontFamily: F, fontSize: 16, fontWeight: 700, color: colors.primary[500] } as any}>
-                  {job.client.split(' ').map(n => n[0]).join('')}
-                </span>
-              </div>
-              <div style={{ flex: 1, minWidth: 0 } as any}>
-                <span style={{ fontFamily: F, fontSize: 16, fontWeight: 600, color: colors.gray[900], display: 'block' } as any}>{job.client}</span>
-                <span style={{ fontFamily: F, fontSize: 14, color: colors.gray[400], marginTop: 2, display: 'block' } as any}>{job.clientPhone}</span>
-              </div>
-            </div>
-          </div>
-
-          {/* ── ADDRESSES ── */}
-          <div style={{ backgroundColor: '#FFFFFF', borderRadius: 16, overflow: 'hidden', marginTop: 10, animation: 'fadeInUp 0.4s cubic-bezier(0.22,1,0.36,1) 0.18s both' } as any}>
-            <JobSectionHeader label="Addresses" />
-            <JobRow icon={dotBlue} label={from} sub="Pickup" first />
-            <JobRow icon={dotRed} label={to} sub="Drop-off" last />
-          </div>
-
-          {/* ── MOVE INFO ── */}
-          <div style={{ backgroundColor: '#FFFFFF', borderRadius: 16, overflow: 'hidden', marginTop: 10, animation: 'fadeInUp 0.4s cubic-bezier(0.22,1,0.36,1) 0.24s both' } as any}>
-            <JobSectionHeader label="Move info" />
-            <JobRow
-              icon={<svg width="22" height="22" viewBox="0 0 24 24" fill="none"><rect x="3" y="4" width="18" height="18" rx="3" stroke={colors.gray[500]} strokeWidth="2"/><path d="M16 2V6M8 2V6M3 10H21" stroke={colors.gray[500]} strokeWidth="2" strokeLinecap="round"/></svg>}
-              label={`${job.date}, 2026`}
-              sub="Moving date"
-              first
-            />
-            <JobRow
-              icon={<svg width="22" height="22" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke={colors.gray[500]} strokeWidth="2"/><path d="M12 7V12L15 14" stroke={colors.gray[500]} strokeWidth="2" strokeLinecap="round"/></svg>}
-              label={job.duration}
-              sub="Duration"
-            />
-            <JobRow
-              icon={<svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M3 12H6L9 6L15 18L18 12H21" stroke={colors.gray[500]} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>}
-              label={job.distance}
-              sub="Distance"
-            />
-            <JobRow
-              icon={<svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" stroke={colors.gray[500]} strokeWidth="2" strokeLinecap="round"/><circle cx="9" cy="7" r="4" stroke={colors.gray[500]} strokeWidth="2"/></svg>}
-              label={`${job.crew} movers`}
-              sub={`Assigned: ${moverName}`}
-              last
-            />
-          </div>
-
-          {/* ── SUMMARY (stat cards like AI Scan) ── */}
-          <div style={{ backgroundColor: '#FFFFFF', borderRadius: 16, overflow: 'hidden', marginTop: 10, padding: 16, animation: 'fadeInUp 0.4s cubic-bezier(0.22,1,0.36,1) 0.3s both' } as any}>
-            <div style={{ paddingBottom: 12 } as any}>
-              <span style={{ fontFamily: F, fontSize: 13, fontWeight: 600, color: colors.gray[400], textTransform: 'uppercase' as const, letterSpacing: 0.8 } as any}>Summary</span>
-            </div>
-            <div style={{ display: 'flex', flexDirection: 'row' as const, gap: 10 } as any}>
-              {[
-                { value: String(job.rooms), label: 'Rooms' },
-                { value: job.items.split(',')[0]?.trim() || '-', label: 'Boxes' },
-                { value: job.items.split(',')[1]?.trim() || '-', label: 'Furniture' },
-              ].map((st, i) => (
-                <div key={i} style={{
-                  flex: 1, display: 'flex', flexDirection: 'column' as const, alignItems: 'center',
-                  paddingTop: 14, paddingBottom: 12, backgroundColor: '#EFF2F7', borderRadius: 12,
-                } as any}>
-                  <span style={{ fontFamily: F, fontSize: 20, fontWeight: 700, color: colors.gray[900] } as any}>{st.value}</span>
-                  <span style={{ fontFamily: F, fontSize: 13, color: colors.gray[400], marginTop: 3 } as any}>{st.label}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* ── NOTES ── */}
-          {job.notes ? (
-            <div style={{ backgroundColor: '#FFFFFF', borderRadius: 16, overflow: 'hidden', marginTop: 10, animation: 'fadeInUp 0.4s cubic-bezier(0.22,1,0.36,1) 0.36s both' } as any}>
-              <JobSectionHeader label="Notes" />
-              <div style={{ paddingLeft: 16, paddingRight: 16, paddingBottom: 16 } as any}>
-                <span style={{ fontFamily: F, fontSize: 15, color: colors.gray[600], lineHeight: '22px' } as any}>{job.notes}</span>
-              </div>
-            </div>
-          ) : null}
-
-        </div>
-      </div>
-    </div>
-    </AnimatedPage>
-  );
+  return {
+    id: `job-${job.date}-${job.client}`,
+    client: job.client,
+    from: fromTo[0] || '',
+    to: fromTo[1] || '',
+    date: `${job.date}, 2026`,
+    time: '10:00 AM',
+    price: parseInt(job.amount.replace(/[$,]/g, '')) || 0,
+    step: job.status === 'Completed' ? 'completed' : 'accepted',
+    roomsCount: job.rooms,
+    clientPhone: job.clientPhone,
+    clientEmail: '',
+    fromApt: '-',
+    fromFloor: '-',
+    fromElevator: true,
+    toApt: '-',
+    toFloor: '-',
+    toElevator: true,
+    distance: job.distance,
+    estimatedTime: job.duration,
+    totalVolume: '-',
+    totalItems: parseInt(job.items.match(/(\d+)\s*boxes/)?.[1] || '0') + parseInt(job.items.match(/(\d+)\s*furniture/)?.[1] || '0'),
+    rooms: [],
+    specialItems: [],
+    notes: job.notes,
+    planName: `${job.crew}-mover team · ${moverName}`,
+    depositPaid: Math.round((parseInt(job.amount.replace(/[$,]/g, '')) || 0) * 0.2),
+  };
 };
 
 /* ═══════════════════════════════════════════
@@ -1253,18 +1039,24 @@ export const CeoDashboardScreen: React.FC<CeoDashboardScreenProps> = ({
     </div>
   );
 
+  /* When a job is selected, render the full MoveDetailScreen directly (it has its own SafeAreaView + StatusBarMock) */
+  if (selectedJob) {
+    return (
+      <MoveDetailScreenBase
+        move={jobToMoveDetail(selectedJob.job, selectedJob.moverName)}
+        onAdvanceStep={() => {}}
+        onBack={() => setSelectedJob(null)}
+        role="ceo"
+      />
+    );
+  }
+
   return (
-    <SafeAreaView style={[s.safeArea, (drillDown || selectedMover !== null || selectedJob) && { backgroundColor: '#F5F5F7' }]}>
-      <View style={[s.container, (drillDown || selectedMover !== null || selectedJob) && { backgroundColor: '#F5F5F7' }]}>
+    <SafeAreaView style={[s.safeArea, (drillDown || selectedMover !== null) && { backgroundColor: '#F5F5F7' }]}>
+      <View style={[s.container, (drillDown || selectedMover !== null) && { backgroundColor: '#F5F5F7' }]}>
         <StatusBarMock onTimeTap={onBack} />
 
-        {selectedJob ? (
-          <JobDetailScreen
-            job={selectedJob.job}
-            moverName={selectedJob.moverName}
-            onBack={() => setSelectedJob(null)}
-          />
-        ) : selectedMover !== null ? (
+        {selectedMover !== null ? (
           <MoverDetailScreen
             mover={TOP_MOVERS[selectedMover]}
             rank={selectedMover + 1}
