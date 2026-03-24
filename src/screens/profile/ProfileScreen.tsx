@@ -214,14 +214,16 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({
                 ) : role !== 'mover' ? (
                   <MenuRow icon={<PersonIcon />} label="Personal Info" onPress={() => onMenuPress('personalInfo')} />
                 ) : null}
-                {role !== 'mover' && (
+                {role === 'ceo' && (
                   <MenuRow icon={<CreditCardIcon />} label="Payout Methods" onPress={() => onMenuPress('paymentMethods')} />
                 )}
-                {role !== 'mover' && (
+                {role === 'ceo' && (
                   <MenuRow icon={<ClockIcon />} label="Move History" onPress={() => onMenuPress('moveHistory')} />
                 )}
 
-                <MenuRow icon={<ContractIcon />} label="My Contracts" onPress={() => onMenuPress('contracts')} />
+                {role !== 'sales' && (
+                  <MenuRow icon={<ContractIcon />} label="My Contracts" onPress={() => onMenuPress('contracts')} />
+                )}
                 <MenuRow icon={<BellIcon />} label="Notification Settings" onPress={() => onMenuPress('notifications')} />
                 <MenuRow icon={<HeadphonesIcon />} label="Help & Support" onPress={() => onMenuPress('helpSupport')} />
                 <MenuRow icon={<FileIcon />} label="Legal" last onPress={() => onMenuPress('legal')} />
@@ -248,14 +250,16 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({
                 ) : role !== 'mover' ? (
                   <MenuRow icon={<PersonIcon />} label="Personal Info" onPress={() => onMenuPress('personalInfo')} />
                 ) : null}
-                {role !== 'mover' && (
+                {role === 'ceo' && (
                   <MenuRow icon={<CreditCardIcon />} label="Payout Methods" onPress={() => onMenuPress('paymentMethods')} />
                 )}
-                {role !== 'mover' && (
+                {role === 'ceo' && (
                   <MenuRow icon={<ClockIcon />} label="Move History" onPress={() => onMenuPress('moveHistory')} />
                 )}
 
-                <MenuRow icon={<ContractIcon />} label="My Contracts" onPress={() => onMenuPress('contracts')} />
+                {role !== 'sales' && (
+                  <MenuRow icon={<ContractIcon />} label="My Contracts" onPress={() => onMenuPress('contracts')} />
+                )}
                 <MenuRow icon={<BellIcon />} label="Notification Settings" onPress={() => onMenuPress('notifications')} />
                 <MenuRow icon={<HeadphonesIcon />} label="Help & Support" onPress={() => onMenuPress('helpSupport')} />
                 <MenuRow icon={<FileIcon />} label="Legal" last onPress={() => onMenuPress('legal')} />
