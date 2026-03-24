@@ -486,6 +486,14 @@ const DRILL_DOWN_DATA: Record<MetricKey, { columns: string[]; rows: string[][] }
       ['Mar 21', 'David C.', 'Westwood → Culver City', '$670', 'Completed'],
       ['Mar 20', 'Emily H.', 'Koreatown → Los Feliz', '$450', 'Cancelled'],
       ['Mar 20', 'Jason M.', 'Brentwood → Marina', '$1,100', 'Completed'],
+      ['Mar 19', 'Grace L.', 'WeHo → Culver City', '$720', 'Completed'],
+      ['Mar 19', 'Steve K.', 'Playa Vista → El Segundo', '$690', 'Completed'],
+      ['Mar 18', 'Maria G.', 'Pasadena → Arcadia', '$440', 'Completed'],
+      ['Mar 18', 'Chris D.', 'Northridge → Encino', '$510', 'Completed'],
+      ['Mar 17', 'Diana W.', 'Redondo Beach → Torrance', '$620', 'Completed'],
+      ['Mar 17', 'Paul M.', 'Glendale → Pasadena', '$390', 'Completed'],
+      ['Mar 16', 'Jen T.', 'Santa Monica → Venice', '$350', 'Completed'],
+      ['Mar 15', 'Grace L.', 'WeHo → Culver City', '$720', 'Cancelled'],
     ],
   },
   rating: {
@@ -644,7 +652,8 @@ const GenericTwoLineRow = ({ row, valueFn }: { row: string[]; valueFn?: (r: stri
 const DetailScreen: React.FC<{
   metric: MetricKey;
   onBack: () => void;
-}> = ({ metric, onBack }) => {
+  onRowPress?: (job: JobData, moverName: string) => void;
+}> = ({ metric, onBack, onRowPress }) => {
   const config = METRIC_CONFIG[metric];
   const data = DRILL_DOWN_DATA[metric];
   const [filterPeriod, setFilterPeriod] = useState<'7d' | '30d' | '90d' | 'custom'>('7d');
@@ -666,42 +675,93 @@ const DetailScreen: React.FC<{
   const periodLabel = filterPeriod === 'custom' ? `${customFrom.slice(5)} — ${customTo.slice(5)}` :
     filterPeriod === '7d' ? 'Last 7 Days' : filterPeriod === '30d' ? 'Last 30 Days' : 'Last 90 Days';
 
+  /* Find matching job from drill-down row data */
+  const findJobForRow = (row: string[]): { job: JobData; moverName: string } | null => {
+    const clientName = metric === 'orders' || metric === 'avgTime' || metric === 'cancellation' ? row[1] :
+                       metric === 'rating' ? row[1] : null;
+    if (!clientName) return null;
+    for (const [moverName, detail] of Object.entries(MOVER_DETAILS)) {
+      const job = detail.recentJobs.find(j => j.client === clientName);
+      if (job) return { job, moverName };
+    }
+    return null;
+  };
+
+  /* Clickable row wrapper */
+  const ClickableRow: React.FC<{ row: string[]; children: React.ReactNode }> = ({ row, children }) => {
+    const match = findJobForRow(row);
+    if (!match || !onRowPress) return <>{children}</>;
+    return (
+      <div onClick={() => onRowPress(match.job, match.moverName)} style={{ cursor: 'pointer' } as any} className="ceo-card-interactive">
+        {children}
+      </div>
+    );
+  };
+
+  /* By Mover breakdown */
+  const moverBreakdown = (() => {
+    if (['conversion', 'onTime'].includes(metric)) return null;
+    const moverStats: { name: string; value: number; label: string }[] = ALL_MOVERS.map(m => {
+      const d = MOVER_DETAILS[m.name];
+      if (!d) return null;
+      const val = metric === 'revenue' || metric === 'avgCheck' ? d.totalRevenue :
+                  metric === 'orders' ? d.completedMoves :
+                  metric === 'avgTime' ? parseFloat(d.avgTime) :
+                  metric === 'cancellation' ? parseFloat(d.cancellation) :
+                  0;
+      const lbl = metric === 'revenue' || metric === 'avgCheck' ? `$${d.totalRevenue.toLocaleString()}` :
+                  metric === 'orders' ? `${d.completedMoves}` :
+                  metric === 'avgTime' ? d.avgTime :
+                  metric === 'cancellation' ? d.cancellation :
+                  '';
+      return { name: m.name, value: val, label: lbl };
+    }).filter(Boolean) as { name: string; value: number; label: string }[];
+
+    const ascending = metric === 'avgTime' || metric === 'cancellation'; // lower is better
+    moverStats.sort((a, b) => ascending ? a.value - b.value : b.value - a.value);
+    const maxVal = Math.max(...moverStats.map(m => m.value));
+    return moverStats.slice(0, 5).map((m, i) => ({ ...m, pct: maxVal > 0 ? (m.value / maxVal) * 100 : 0, rank: i }));
+  })();
+
   /* Render a single row based on metric type */
   const renderRow = (row: string[], i: number) => {
-    if (metric === 'orders') return <OrderRow key={i} row={row} />;
-    if (metric === 'rating') return <RatingRow key={i} row={row} />;
-    if (metric === 'conversion') return <ConversionRow key={i} row={row} />;
-    if (metric === 'revenue') return (
-      <GenericTwoLineRow key={i} row={row} valueFn={r => ({
-        main: r[2], mainColor: colors.primary[500],
-        sub: `${r[1]} orders · Avg ${r[3]} · ${r[4]}`,
-      })} />
-    );
-    if (metric === 'avgCheck') return (
-      <GenericTwoLineRow key={i} row={row} valueFn={r => ({
-        main: r[3],
-        sub: `${r[1]} orders · ${r[2]} total revenue · ${r[4]}`,
-      })} />
-    );
-    if (metric === 'onTime') return (
-      <GenericTwoLineRow key={i} row={row} valueFn={r => ({
-        main: r[4], mainColor: parseInt(r[4]) >= 95 ? colors.success[500] : colors.warning[500],
-        sub: `${r[2]} on-time · ${r[3]} late · ${r[1]} total`,
-      })} />
-    );
-    if (metric === 'cancellation') return (
-      <GenericTwoLineRow key={i} row={row} valueFn={r => ({
-        main: r[3], mainColor: colors.error[500],
-        sub: `${r[1]} · ${r[2]} · Mover: ${r[4]}`,
-      })} />
-    );
-    if (metric === 'avgTime') return (
-      <GenericTwoLineRow key={i} row={row} valueFn={r => ({
-        main: r[4], mainColor: colors.primary[500],
-        sub: `${r[1]} · ${r[2]} rooms · ${r[3]}`,
-      })} />
-    );
-    return null;
+    const inner = (() => {
+      if (metric === 'orders') return <OrderRow row={row} />;
+      if (metric === 'rating') return <RatingRow row={row} />;
+      if (metric === 'conversion') return <ConversionRow row={row} />;
+      if (metric === 'revenue') return (
+        <GenericTwoLineRow row={row} valueFn={r => ({
+          main: r[2], mainColor: colors.primary[500],
+          sub: `${r[1]} orders · Avg ${r[3]} · ${r[4]}`,
+        })} />
+      );
+      if (metric === 'avgCheck') return (
+        <GenericTwoLineRow row={row} valueFn={r => ({
+          main: r[3],
+          sub: `${r[1]} orders · ${r[2]} total revenue · ${r[4]}`,
+        })} />
+      );
+      if (metric === 'onTime') return (
+        <GenericTwoLineRow row={row} valueFn={r => ({
+          main: r[4], mainColor: parseInt(r[4]) >= 95 ? colors.success[500] : colors.warning[500],
+          sub: `${r[2]} on-time · ${r[3]} late · ${r[1]} total`,
+        })} />
+      );
+      if (metric === 'cancellation') return (
+        <GenericTwoLineRow row={row} valueFn={r => ({
+          main: r[3], mainColor: colors.error[500],
+          sub: `${r[1]} · ${r[2]} · Mover: ${r[4]}`,
+        })} />
+      );
+      if (metric === 'avgTime') return (
+        <GenericTwoLineRow row={row} valueFn={r => ({
+          main: r[4], mainColor: colors.primary[500],
+          sub: `${r[1]} · ${r[2]} rooms · ${r[3]}`,
+        })} />
+      );
+      return null;
+    })();
+    return <ClickableRow key={i} row={row}>{inner}</ClickableRow>;
   };
 
   return (
@@ -862,6 +922,30 @@ const DetailScreen: React.FC<{
             </span>
           </div>
         </div>
+
+        {/* By Mover Breakdown */}
+        {moverBreakdown && (
+          <div style={{ backgroundColor: '#FFFFFF', borderRadius: 16, padding: 16, marginBottom: 16 } as any}>
+            <span style={{ fontFamily: F, fontSize: 13, fontWeight: 600, color: colors.gray[400], textTransform: 'uppercase', letterSpacing: 0.8, display: 'block', marginBottom: 12 } as any}>
+              By Mover
+            </span>
+            {moverBreakdown.map((m, i) => (
+              <div key={m.name} style={{ marginBottom: i < moverBreakdown.length - 1 ? 10 : 0 } as any}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 } as any}>
+                  <span style={{ fontFamily: F, fontSize: 13, fontWeight: 500, color: colors.gray[700] } as any}>{m.name}</span>
+                  <span style={{ fontFamily: F, fontSize: 13, fontWeight: 700, color: i === 0 ? config.color : colors.gray[600] } as any}>{m.label}</span>
+                </div>
+                <div style={{ height: 6, backgroundColor: '#EFF2F7', borderRadius: 3, overflow: 'hidden' } as any}>
+                  <div style={{
+                    height: '100%', borderRadius: 3, width: `${m.pct}%`,
+                    backgroundColor: i === 0 ? config.color : `${config.color}60`,
+                    transition: 'width 0.5s ease',
+                  } as any} />
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
 
         {/* Row List */}
         {data.rows.map((row, i) => (
@@ -1249,6 +1333,7 @@ export const CeoDashboardScreen: React.FC<CeoDashboardScreenProps> = ({
   const [selectedMover, setSelectedMover] = useState<number | null>(null);
   const [showAllMovers, setShowAllMovers] = useState(false);
   const [selectedJob, setSelectedJob] = useState<{ job: JobData; moverName: string } | null>(null);
+  const [selectedChartBar, setSelectedChartBar] = useState<number | null>(null);
 
   /* Inject animation CSS on mount */
   useEffect(() => { injectAnimationCSS(); }, []);
@@ -1324,7 +1409,7 @@ export const CeoDashboardScreen: React.FC<CeoDashboardScreenProps> = ({
             onSelectMover={(idx) => { setSelectedMover(idx); }}
           />
         ) : drillDown ? (
-          <DetailScreen metric={drillDown} onBack={() => setDrillDown(null)} />
+          <DetailScreen metric={drillDown} onBack={() => setDrillDown(null)} onRowPress={(job, moverName) => setSelectedJob({ job, moverName })} />
         ) : (
           <>
             <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false}>
@@ -1338,6 +1423,83 @@ export const CeoDashboardScreen: React.FC<CeoDashboardScreenProps> = ({
                   <span style={{ fontFamily: F, fontSize: 26, fontWeight: 800, color: colors.gray[900], display: 'block', marginTop: 2, letterSpacing: -0.5 } as any}>
                     Company Overview
                   </span>
+                </div>
+
+                {/* ── Alerts / Notifications ── */}
+                <div style={{ marginBottom: 12, animation: 'fadeInUp 0.35s cubic-bezier(0.22,1,0.36,1) 0.02s both' } as any}>
+                  {[
+                    { icon: '⚡', text: 'Mike R. move in progress — DTLA → Santa Monica', color: colors.primary[500], bg: colors.primary[50] },
+                    { icon: '⏰', text: 'Ryan P. running 20 min behind schedule', color: colors.warning[600], bg: colors.warning[50] },
+                    { icon: '✓', text: '3 moves completed today', color: colors.success[500], bg: colors.success[50] },
+                  ].map((alert, i) => (
+                    <div key={i} style={{
+                      display: 'flex', alignItems: 'center', gap: 12,
+                      padding: '12px 14px', marginBottom: 6,
+                      backgroundColor: '#FFFFFF', borderRadius: 14,
+                    } as any}>
+                      <div style={{
+                        width: 36, height: 36, borderRadius: 10,
+                        backgroundColor: alert.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+                        fontSize: 16,
+                      } as any}>
+                        {alert.icon}
+                      </div>
+                      <span style={{ fontFamily: F, fontSize: 13, fontWeight: 500, color: colors.gray[700], flex: 1, lineHeight: '18px' } as any}>
+                        {alert.text}
+                      </span>
+                      <ChevronRightIcon color={colors.gray[200]} />
+                    </div>
+                  ))}
+                </div>
+
+                {/* ── Active Moves (live) ── */}
+                <div style={{
+                  backgroundColor: '#FFFFFF', borderRadius: 16, padding: '16px', marginBottom: 12,
+                  animation: 'fadeInUp 0.35s cubic-bezier(0.22,1,0.36,1) 0.04s both',
+                } as any}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 } as any}>
+                    <span style={{ fontFamily: F, fontSize: 15, fontWeight: 700, color: colors.gray[900] } as any}>
+                      Active Now
+                    </span>
+                    <div style={{
+                      display: 'flex', alignItems: 'center', gap: 6,
+                      backgroundColor: colors.success[50], borderRadius: 8, padding: '4px 10px',
+                    } as any}>
+                      <div style={{ width: 6, height: 6, borderRadius: 3, backgroundColor: colors.success[500] } as any} />
+                      <span style={{ fontFamily: F, fontSize: 12, fontWeight: 600, color: colors.success[600] } as any}>
+                        2 moves
+                      </span>
+                    </div>
+                  </div>
+                  {[
+                    { client: 'Mike R.', mover: 'Alex M.', route: 'DTLA → Santa Monica', step: 'Loading', progress: 4, of: 8 },
+                    { client: 'Kevin T.', mover: 'Marcus T.', route: 'Koreatown → Los Feliz', step: 'En Route to Pickup', progress: 2, of: 8 },
+                  ].map((m, i) => (
+                    <div key={i} style={{
+                      padding: '12px 0', borderTop: i > 0 ? `1px solid #EFF2F7` : 'none',
+                    } as any}>
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 } as any}>
+                        <span style={{ fontFamily: F, fontSize: 14, fontWeight: 600, color: colors.gray[900] } as any}>{m.client}</span>
+                        <span style={{
+                          fontFamily: F, fontSize: 12, fontWeight: 600, color: '#B54708',
+                          backgroundColor: '#FFFAEB', padding: '3px 8px', borderRadius: 6,
+                        } as any}>
+                          {m.step}
+                        </span>
+                      </div>
+                      <span style={{ fontFamily: F, fontSize: 12, color: colors.gray[500], display: 'block', marginBottom: 2 } as any}>
+                        {m.route} · Mover: {m.mover}
+                      </span>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 8 } as any}>
+                        <div style={{ flex: 1, height: 4, backgroundColor: '#EFF2F7', borderRadius: 2, overflow: 'hidden' } as any}>
+                          <div style={{ height: '100%', width: `${(m.progress / m.of) * 100}%`, backgroundColor: colors.primary[500], borderRadius: 2 } as any} />
+                        </div>
+                        <span style={{ fontFamily: F, fontSize: 11, color: colors.gray[400], flexShrink: 0 } as any}>
+                          {m.progress}/{m.of}
+                        </span>
+                      </div>
+                    </div>
+                  ))}
                 </div>
 
                 {/* ── Revenue Hero Card (white, no gradient) ── */}
@@ -1433,24 +1595,53 @@ export const CeoDashboardScreen: React.FC<CeoDashboardScreenProps> = ({
                   <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'flex-end', gap: 6, height: 120 } as any}>
                     {d.chart.map((c, i) => {
                       const h = Math.max((c.value / maxRev) * 100, 8);
+                      const isSelected = selectedChartBar === i;
                       const isMax = c.value === maxRev;
                       return (
-                        <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 } as any}>
-                          <span style={{ fontFamily: F, fontSize: 10, fontWeight: 600, color: colors.gray[400] } as any}>
+                        <div
+                          key={i}
+                          onClick={(e: any) => { e.stopPropagation(); setSelectedChartBar(isSelected ? null : i); }}
+                          style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6, cursor: 'pointer' } as any}
+                        >
+                          <span style={{ fontFamily: F, fontSize: 10, fontWeight: 600, color: isSelected ? colors.primary[500] : colors.gray[400] } as any}>
                             ${c.value >= 1000 ? (c.value / 1000).toFixed(1) + 'k' : c.value}
                           </span>
                           <div style={{
                             width: '100%', height: h, borderRadius: 8,
-                            backgroundColor: isMax ? colors.primary[500] : colors.primary[100],
-                            transition: 'height 0.3s ease',
+                            backgroundColor: isSelected ? colors.primary[600] : isMax ? colors.primary[500] : colors.primary[100],
+                            transition: 'height 0.3s ease, background-color 0.2s ease',
+                            transform: isSelected ? 'scaleX(1.1)' : 'scaleX(1)',
                           } as any} />
-                          <span style={{ fontFamily: F, fontSize: 11, fontWeight: 500, color: colors.gray[400] } as any}>
+                          <span style={{ fontFamily: F, fontSize: 11, fontWeight: isSelected ? 700 : 500, color: isSelected ? colors.primary[500] : colors.gray[400] } as any}>
                             {c.day}
                           </span>
                         </div>
                       );
                     })}
                   </div>
+                  {/* Selected bar detail popup */}
+                  {selectedChartBar !== null && (
+                    <div style={{
+                      marginTop: 12, padding: '12px 14px', backgroundColor: '#EFF2F7', borderRadius: 12,
+                      display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                    } as any}>
+                      <div style={{} as any}>
+                        <span style={{ fontFamily: F, fontSize: 14, fontWeight: 700, color: colors.gray[900], display: 'block' } as any}>
+                          {d.chart[selectedChartBar].day}
+                        </span>
+                        <span style={{ fontFamily: F, fontSize: 12, color: colors.gray[500], marginTop: 2, display: 'block' } as any}>
+                          ${d.chart[selectedChartBar].value.toLocaleString()} revenue
+                        </span>
+                      </div>
+                      <div
+                        onClick={(e: any) => { e.stopPropagation(); setDrillDown('revenue'); }}
+                        style={{ display: 'flex', alignItems: 'center', gap: 4, cursor: 'pointer' } as any}
+                      >
+                        <span style={{ fontFamily: F, fontSize: 13, fontWeight: 600, color: colors.primary[500] } as any}>Details</span>
+                        <ChevronRightIcon color={colors.primary[500]} />
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 {/* ── Top Movers Leaderboard ── */}
