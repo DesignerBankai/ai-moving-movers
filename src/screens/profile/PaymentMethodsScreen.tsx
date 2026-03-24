@@ -25,7 +25,7 @@ interface PaymentMethodsScreenProps {
   role?: 'mover' | 'sales' | 'ceo';
 }
 
-type ViewType = 'list' | 'addPicker' | 'addCard' | 'addBank' | 'cardDetail' | 'deleteConfirm' | 'success' | 'bankSuccess';
+type ViewType = 'list' | 'addPicker' | 'addCard' | 'addBank' | 'cardDetail' | 'bankDetail' | 'bankRemoveConfirm' | 'deleteConfirm' | 'success' | 'bankSuccess';
 
 const DEMO_CARDS: PaymentCard[] = [
   {
@@ -56,12 +56,12 @@ export const PaymentMethodsScreen: React.FC<PaymentMethodsScreenProps> = ({
   const [selectedCard, setSelectedCard] = useState<PaymentCard | null>(null);
   const [scaleAnim] = useState(new Animated.Value(0));
   const [defaultMethod, setDefaultMethod] = useState<'bank' | string>(role === 'ceo' ? 'bank' : initialCards.find(c => c.isDefault)?.id || '');
-  const [bankEditMode, setBankEditMode] = useState(false);
   const [bankName, setBankName] = useState('Chase Business Checking');
   const [bankRouting, setBankRouting] = useState('****0021');
   const [bankAccount, setBankAccount] = useState('****6789');
   const [bankHolder, setBankHolder] = useState('AI Moving LLC');
   const [bankType, setBankType] = useState<'checking' | 'savings'>('checking');
+  const [hasBankAccount, setHasBankAccount] = useState(role === 'ceo');
 
   // Form fields for add card
   const [cardNumber, setCardNumber] = useState('');
@@ -282,15 +282,16 @@ export const PaymentMethodsScreen: React.FC<PaymentMethodsScreenProps> = ({
           {hasCards ? (
             <View style={{ paddingHorizontal: 16, paddingVertical: 16, gap: 12 }}>
               {/* Company Bank Account — CEO only */}
-              {role === 'ceo' && (
+              {role === 'ceo' && hasBankAccount && (
                 <Pressable
                   onPress={() => { setDefaultMethod('bank'); setCards(cards.map(c => ({ ...c, isDefault: false }))); }}
-                  style={{ backgroundColor: '#FFFFFF', borderRadius: 16, overflow: 'hidden', marginBottom: 4 } as any}
+                  style={{
+                    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
+                    paddingHorizontal: 16, paddingVertical: 16,
+                    backgroundColor: '#FFFFFF', borderRadius: 14, marginBottom: 4,
+                  } as any}
                 >
-                  <View style={{
-                    flexDirection: 'row', alignItems: 'center', gap: 14,
-                    paddingHorizontal: 16, paddingTop: 16, paddingBottom: 16,
-                  }}>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12, flex: 1 }}>
                     {/* Radio dot */}
                     <View style={{
                       width: 22, height: 22, borderRadius: 11,
@@ -302,79 +303,22 @@ export const PaymentMethodsScreen: React.FC<PaymentMethodsScreenProps> = ({
                       )}
                     </View>
                     {renderBankBuildingSVG()}
-                    <View style={{ flex: 1 }}>
+                    <View style={{ flexDirection: 'column', gap: 4 }}>
                       {Platform.OS === 'web' && (
                         <>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: 8 } as any}>
-                            <span style={{ fontSize: 15, fontWeight: 600, color: colors.gray[900], fontFamily: 'Inter, system-ui, sans-serif' } as any}>
-                              {bankName}
-                            </span>
-                            <span style={{ fontSize: 10, fontWeight: 600, color: colors.success[600], backgroundColor: colors.success[50], padding: '2px 6px', borderRadius: 4, fontFamily: 'Inter, system-ui, sans-serif' } as any}>
-                              Connected
-                            </span>
-                          </div>
-                          <span style={{ fontSize: 13, color: colors.gray[500], fontFamily: 'Inter, system-ui, sans-serif', marginTop: 2 } as any}>
-                            {bankHolder} · Acct {bankAccount}
+                          <span style={{ fontSize: '15px', fontWeight: '500', color: colors.gray[800], fontFamily: 'Inter, system-ui, sans-serif' } as any}>
+                            {bankName}
+                          </span>
+                          <span style={{ fontSize: '12px', color: colors.gray[600], fontFamily: 'Inter, system-ui, sans-serif' } as any}>
+                            {bankHolder} · {bankAccount}
                           </span>
                         </>
                       )}
                     </View>
-                    <Pressable onPress={(e: any) => { e.stopPropagation?.(); setBankEditMode(!bankEditMode); }} hitSlop={8}>
-                      {Platform.OS === 'web' && (
-                        <span style={{ fontSize: 13, fontWeight: 600, color: colors.primary[500], cursor: 'pointer', fontFamily: 'Inter, system-ui, sans-serif' } as any}>
-                          {bankEditMode ? 'Done' : 'Edit'}
-                        </span>
-                      )}
-                    </Pressable>
                   </View>
-                  {/* Bank edit fields */}
-                  {bankEditMode && Platform.OS === 'web' && (() => {
-                    const fieldStyle = { fontFamily: 'Inter, system-ui, sans-serif', fontSize: 15, fontWeight: 400, color: colors.gray[900], backgroundColor: colors.gray[50], border: 'none', outline: 'none', width: '100%', padding: '10px 12px', borderRadius: 10 } as any;
-                    const labelStyle = { fontSize: 12, fontWeight: 600, color: colors.gray[400], textTransform: 'uppercase', letterSpacing: 0.6, display: 'block', marginBottom: 6, fontFamily: 'Inter, system-ui, sans-serif' } as any;
-                    return (
-                      <div style={{ padding: '0 16px 16px', borderTop: `1px solid ${colors.gray[100]}`, paddingTop: 12 } as any}>
-                        <div style={{ marginBottom: 10 } as any}>
-                          <span style={labelStyle}>Account Holder</span>
-                          <input value={bankHolder} onChange={(e: any) => setBankHolder(e.target.value)} style={fieldStyle} />
-                        </div>
-                        <div style={{ marginBottom: 10 } as any}>
-                          <span style={labelStyle}>Bank Name</span>
-                          <input value={bankName} onChange={(e: any) => setBankName(e.target.value)} style={fieldStyle} />
-                        </div>
-                        <div style={{ marginBottom: 10 } as any}>
-                          <span style={labelStyle}>Routing Number (ABA)</span>
-                          <input value={bankRouting} onChange={(e: any) => setBankRouting(e.target.value)} style={fieldStyle} placeholder="9 digits" />
-                        </div>
-                        <div style={{ marginBottom: 10 } as any}>
-                          <span style={labelStyle}>Account Number</span>
-                          <input value={bankAccount} onChange={(e: any) => setBankAccount(e.target.value)} style={fieldStyle} />
-                        </div>
-                        <div style={{} as any}>
-                          <span style={labelStyle}>Account Type</span>
-                          <div style={{ display: 'flex', flexDirection: 'row', gap: 8 } as any}>
-                            {(['checking', 'savings'] as const).map(t => (
-                              <div
-                                key={t}
-                                onClick={() => setBankType(t)}
-                                style={{
-                                  flex: 1, padding: '10px 12px', borderRadius: 10, cursor: 'pointer', textAlign: 'center',
-                                  backgroundColor: bankType === t ? colors.primary[500] : colors.gray[50],
-                                } as any}
-                              >
-                                <span style={{
-                                  fontFamily: 'Inter, system-ui, sans-serif', fontSize: 14, fontWeight: 600,
-                                  color: bankType === t ? '#FFFFFF' : colors.gray[600],
-                                  textTransform: 'capitalize',
-                                } as any}>
-                                  {t}
-                                </span>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      </div>
-                    );
-                  })()}
+                  <Pressable onPress={(e: any) => { e.stopPropagation?.(); setView('bankDetail'); }} hitSlop={8}>
+                    {renderChevronRightSVG()}
+                  </Pressable>
                 </Pressable>
               )}
 
@@ -714,6 +658,157 @@ export const PaymentMethodsScreen: React.FC<PaymentMethodsScreenProps> = ({
     );
   };
 
+  // Bank detail bottom sheet (matches card action sheet pattern)
+  const renderBankDetailSheet = () => (
+    <View style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, zIndex: 100 }}>
+      <Pressable
+        onPress={() => setView('list')}
+        style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0, 0, 0, 0.4)' }}
+      />
+      <View style={{
+        position: 'absolute', bottom: 0, left: 0, right: 0,
+        backgroundColor: colors.white, borderTopLeftRadius: 20, borderTopRightRadius: 20,
+        paddingTop: 12, paddingBottom: 34, paddingHorizontal: 16,
+      }}>
+        {/* Drag handle */}
+        <View style={{ alignItems: 'center', marginBottom: 16 }}>
+          <View style={{ width: 36, height: 4, borderRadius: 2, backgroundColor: colors.gray[200] }} />
+        </View>
+
+        {/* Bank info header */}
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 20, paddingHorizontal: 4 }}>
+          {renderBankBuildingSVG()}
+          <View style={{ gap: 2 }}>
+            {Platform.OS === 'web' && (
+              <>
+                <span style={{ fontSize: '16px', fontWeight: '600', color: colors.gray[900], fontFamily: 'Inter, system-ui, sans-serif' } as any}>
+                  {bankName}
+                </span>
+                <span style={{ fontSize: '13px', color: colors.gray[500], fontFamily: 'Inter, system-ui, sans-serif' } as any}>
+                  {bankHolder}
+                </span>
+              </>
+            )}
+          </View>
+          {defaultMethod === 'bank' && (
+            <View style={{ backgroundColor: colors.primary[500], paddingHorizontal: 8, paddingVertical: 3, borderRadius: 10, marginLeft: 'auto' as any }}>
+              {Platform.OS === 'web' && (
+                <span style={{ fontSize: '11px', fontWeight: '600', color: colors.white, fontFamily: 'Inter, system-ui, sans-serif' } as any}>Default</span>
+              )}
+            </View>
+          )}
+        </View>
+
+        {/* Bank details */}
+        {Platform.OS === 'web' && (
+          <View style={{ backgroundColor: colors.gray[50], borderRadius: 14, padding: 16, marginBottom: 20 } as any}>
+            {[
+              { label: 'Account Holder', value: bankHolder },
+              { label: 'Bank Name', value: bankName },
+              { label: 'Routing Number', value: bankRouting },
+              { label: 'Account Number', value: bankAccount },
+              { label: 'Account Type', value: bankType.charAt(0).toUpperCase() + bankType.slice(1) },
+            ].map((row, i, arr) => (
+              <div key={row.label} style={{
+                display: 'flex', flexDirection: 'row' as const, justifyContent: 'space-between', alignItems: 'center',
+                paddingTop: 10, paddingBottom: 10,
+                borderBottom: i < arr.length - 1 ? `1px solid ${colors.gray[200]}` : 'none',
+              } as any}>
+                <span style={{ fontFamily: 'Inter, system-ui, sans-serif', fontSize: 13, color: colors.gray[500] } as any}>{row.label}</span>
+                <span style={{ fontFamily: 'Inter, system-ui, sans-serif', fontSize: 13, fontWeight: 500, color: colors.gray[900] } as any}>{row.value}</span>
+              </div>
+            ))}
+          </View>
+        )}
+
+        {/* Actions */}
+        <View style={{ gap: 10 } as any}>
+          {defaultMethod !== 'bank' && (
+            <Pressable
+              onPress={() => { setDefaultMethod('bank'); setCards(cards.map(c => ({ ...c, isDefault: false }))); setView('list'); }}
+              style={{ height: 52, borderRadius: 14, backgroundColor: colors.primary[500], alignItems: 'center', justifyContent: 'center' }}
+            >
+              {Platform.OS === 'web' && (
+                <span style={{ fontSize: '15px', fontWeight: '600', color: colors.white, fontFamily: 'Inter, system-ui, sans-serif', cursor: 'pointer' } as any}>
+                  Set as Default
+                </span>
+              )}
+            </Pressable>
+          )}
+          <Pressable
+            onPress={() => setView('bankRemoveConfirm')}
+            style={{ height: 52, borderRadius: 14, backgroundColor: colors.error[50] || '#FEF3F2', alignItems: 'center', justifyContent: 'center' }}
+          >
+            {Platform.OS === 'web' && (
+              <span style={{ fontSize: '15px', fontWeight: '600', color: colors.error[500], fontFamily: 'Inter, system-ui, sans-serif', cursor: 'pointer' } as any}>
+                Remove Account
+              </span>
+            )}
+          </Pressable>
+          <Pressable
+            onPress={() => setView('list')}
+            style={{ height: 52, borderRadius: 14, alignItems: 'center', justifyContent: 'center' }}
+          >
+            {Platform.OS === 'web' && (
+              <span style={{ fontSize: '15px', fontWeight: '500', color: colors.gray[500], fontFamily: 'Inter, system-ui, sans-serif', cursor: 'pointer' } as any}>
+                Cancel
+              </span>
+            )}
+          </Pressable>
+        </View>
+      </View>
+    </View>
+  );
+
+  // Bank remove confirmation
+  const renderBankRemoveConfirm = () => (
+    <View style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, zIndex: 200 }}>
+      <Pressable
+        onPress={() => setView('bankDetail')}
+        style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0, 0, 0, 0.5)' }}
+      />
+      <View style={{
+        position: 'absolute', top: '50%' as any, left: 16, right: 16,
+        transform: [{ translateY: -80 }],
+        backgroundColor: colors.white, borderRadius: 20,
+        paddingHorizontal: 24, paddingTop: 28, paddingBottom: 24,
+      }}>
+        {Platform.OS === 'web' && (
+          <>
+            <span style={{ fontSize: '17px', fontWeight: '700', color: colors.gray[900], fontFamily: 'Inter, system-ui, sans-serif', textAlign: 'center', display: 'block', marginBottom: '8px' } as any}>
+              Remove Bank Account?
+            </span>
+            <span style={{ fontSize: '14px', color: colors.gray[600], fontFamily: 'Inter, system-ui, sans-serif', textAlign: 'center', display: 'block', marginBottom: '20px' } as any}>
+              Are you sure you want to remove {bankName}?
+            </span>
+          </>
+        )}
+        <View style={{ flexDirection: 'row', gap: 12 }}>
+          <View style={{ flex: 1 }}>
+            <Button title="Cancel" variant="secondary" onPress={() => setView('bankDetail')} />
+          </View>
+          <View style={{ flex: 1 }}>
+            <Pressable
+              onPress={() => {
+                setHasBankAccount(false);
+                if (defaultMethod === 'bank') {
+                  const firstCard = cards[0];
+                  setDefaultMethod(firstCard ? firstCard.id : '');
+                }
+                setView('list');
+              }}
+              style={{ paddingVertical: 14, borderRadius: 14, backgroundColor: colors.error[500], alignItems: 'center' }}
+            >
+              {Platform.OS === 'web' && (
+                <span style={{ fontSize: '15px', fontWeight: '600', color: colors.white, fontFamily: 'Inter, system-ui, sans-serif', cursor: 'pointer' } as any}>Remove</span>
+              )}
+            </Pressable>
+          </View>
+        </View>
+      </View>
+    </View>
+  );
+
   // Delete confirmation modal overlay
   const renderDeleteConfirmOverlay = () => {
     if (!selectedCard) return null;
@@ -977,6 +1072,7 @@ export const PaymentMethodsScreen: React.FC<PaymentMethodsScreenProps> = ({
     setBankAccount(masked);
     setBankHolder(newBankHolder);
     setBankType(newBankType);
+    setHasBankAccount(true);
     setDefaultMethod('bank');
     setNewBankHolder(''); setNewBankName(''); setNewBankRouting(''); setNewBankAccount('');
     setBankFormErrors({});
@@ -1097,6 +1193,8 @@ export const PaymentMethodsScreen: React.FC<PaymentMethodsScreenProps> = ({
       {renderListView()}
       {view === 'addPicker' && renderAddPickerSheet()}
       {view === 'cardDetail' && renderCardActionSheet()}
+      {view === 'bankDetail' && renderBankDetailSheet()}
+      {view === 'bankRemoveConfirm' && renderBankRemoveConfirm()}
       {view === 'deleteConfirm' && renderDeleteConfirmOverlay()}
     </View>
   );
