@@ -58,7 +58,10 @@ export const PaymentMethodsScreen: React.FC<PaymentMethodsScreenProps> = ({
   const [defaultMethod, setDefaultMethod] = useState<'bank' | string>(role === 'ceo' ? 'bank' : initialCards.find(c => c.isDefault)?.id || '');
   const [bankEditMode, setBankEditMode] = useState(false);
   const [bankName, setBankName] = useState('Chase Business Checking');
+  const [bankRouting, setBankRouting] = useState('****0021');
   const [bankAccount, setBankAccount] = useState('****6789');
+  const [bankHolder, setBankHolder] = useState('AI Moving LLC');
+  const [bankType, setBankType] = useState<'checking' | 'savings'>('checking');
 
   // Form fields for add card
   const [cardNumber, setCardNumber] = useState('');
@@ -311,7 +314,7 @@ export const PaymentMethodsScreen: React.FC<PaymentMethodsScreenProps> = ({
                             </span>
                           </div>
                           <span style={{ fontSize: 13, color: colors.gray[500], fontFamily: 'Inter, system-ui, sans-serif', marginTop: 2 } as any}>
-                            {bankAccount}
+                            {bankHolder} · Acct {bankAccount}
                           </span>
                         </>
                       )}
@@ -325,18 +328,53 @@ export const PaymentMethodsScreen: React.FC<PaymentMethodsScreenProps> = ({
                     </Pressable>
                   </View>
                   {/* Bank edit fields */}
-                  {bankEditMode && Platform.OS === 'web' && (
-                    <div style={{ padding: '0 16px 16px', borderTop: `1px solid ${colors.gray[100]}`, paddingTop: 12 } as any}>
-                      <div style={{ marginBottom: 10 } as any}>
-                        <span style={{ fontSize: 12, fontWeight: 600, color: colors.gray[400], textTransform: 'uppercase', letterSpacing: 0.6, display: 'block', marginBottom: 6, fontFamily: 'Inter, system-ui, sans-serif' } as any}>Bank Name</span>
-                        <input value={bankName} onChange={(e: any) => setBankName(e.target.value)} style={{ fontFamily: 'Inter, system-ui, sans-serif', fontSize: 15, fontWeight: 400, color: colors.gray[900], backgroundColor: colors.gray[50], border: 'none', outline: 'none', width: '100%', padding: '10px 12px', borderRadius: 10 } as any} />
+                  {bankEditMode && Platform.OS === 'web' && (() => {
+                    const fieldStyle = { fontFamily: 'Inter, system-ui, sans-serif', fontSize: 15, fontWeight: 400, color: colors.gray[900], backgroundColor: colors.gray[50], border: 'none', outline: 'none', width: '100%', padding: '10px 12px', borderRadius: 10 } as any;
+                    const labelStyle = { fontSize: 12, fontWeight: 600, color: colors.gray[400], textTransform: 'uppercase', letterSpacing: 0.6, display: 'block', marginBottom: 6, fontFamily: 'Inter, system-ui, sans-serif' } as any;
+                    return (
+                      <div style={{ padding: '0 16px 16px', borderTop: `1px solid ${colors.gray[100]}`, paddingTop: 12 } as any}>
+                        <div style={{ marginBottom: 10 } as any}>
+                          <span style={labelStyle}>Account Holder</span>
+                          <input value={bankHolder} onChange={(e: any) => setBankHolder(e.target.value)} style={fieldStyle} />
+                        </div>
+                        <div style={{ marginBottom: 10 } as any}>
+                          <span style={labelStyle}>Bank Name</span>
+                          <input value={bankName} onChange={(e: any) => setBankName(e.target.value)} style={fieldStyle} />
+                        </div>
+                        <div style={{ marginBottom: 10 } as any}>
+                          <span style={labelStyle}>Routing Number (ABA)</span>
+                          <input value={bankRouting} onChange={(e: any) => setBankRouting(e.target.value)} style={fieldStyle} placeholder="9 digits" />
+                        </div>
+                        <div style={{ marginBottom: 10 } as any}>
+                          <span style={labelStyle}>Account Number</span>
+                          <input value={bankAccount} onChange={(e: any) => setBankAccount(e.target.value)} style={fieldStyle} />
+                        </div>
+                        <div style={{} as any}>
+                          <span style={labelStyle}>Account Type</span>
+                          <div style={{ display: 'flex', flexDirection: 'row', gap: 8 } as any}>
+                            {(['checking', 'savings'] as const).map(t => (
+                              <div
+                                key={t}
+                                onClick={() => setBankType(t)}
+                                style={{
+                                  flex: 1, padding: '10px 12px', borderRadius: 10, cursor: 'pointer', textAlign: 'center',
+                                  backgroundColor: bankType === t ? colors.primary[500] : colors.gray[50],
+                                } as any}
+                              >
+                                <span style={{
+                                  fontFamily: 'Inter, system-ui, sans-serif', fontSize: 14, fontWeight: 600,
+                                  color: bankType === t ? '#FFFFFF' : colors.gray[600],
+                                  textTransform: 'capitalize',
+                                } as any}>
+                                  {t}
+                                </span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
                       </div>
-                      <div style={{} as any}>
-                        <span style={{ fontSize: 12, fontWeight: 600, color: colors.gray[400], textTransform: 'uppercase', letterSpacing: 0.6, display: 'block', marginBottom: 6, fontFamily: 'Inter, system-ui, sans-serif' } as any}>Account Number</span>
-                        <input value={bankAccount} onChange={(e: any) => setBankAccount(e.target.value)} style={{ fontFamily: 'Inter, system-ui, sans-serif', fontSize: 15, fontWeight: 400, color: colors.gray[900], backgroundColor: colors.gray[50], border: 'none', outline: 'none', width: '100%', padding: '10px 12px', borderRadius: 10 } as any} />
-                      </div>
-                    </div>
-                  )}
+                    );
+                  })()}
                 </Pressable>
               )}
 
