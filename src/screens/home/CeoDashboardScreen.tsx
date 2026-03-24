@@ -698,31 +698,6 @@ const DetailScreen: React.FC<{
     );
   };
 
-  /* By Mover breakdown */
-  const moverBreakdown = (() => {
-    if (['conversion', 'onTime'].includes(metric)) return null;
-    const moverStats: { name: string; value: number; label: string }[] = ALL_MOVERS.map(m => {
-      const d = MOVER_DETAILS[m.name];
-      if (!d) return null;
-      const val = metric === 'revenue' || metric === 'avgCheck' ? d.totalRevenue :
-                  metric === 'orders' ? d.completedMoves :
-                  metric === 'avgTime' ? parseFloat(d.avgTime) :
-                  metric === 'cancellation' ? parseFloat(d.cancellation) :
-                  0;
-      const lbl = metric === 'revenue' || metric === 'avgCheck' ? `$${d.totalRevenue.toLocaleString()}` :
-                  metric === 'orders' ? `${d.completedMoves}` :
-                  metric === 'avgTime' ? d.avgTime :
-                  metric === 'cancellation' ? d.cancellation :
-                  '';
-      return { name: m.name, value: val, label: lbl };
-    }).filter(Boolean) as { name: string; value: number; label: string }[];
-
-    const ascending = metric === 'avgTime' || metric === 'cancellation'; // lower is better
-    moverStats.sort((a, b) => ascending ? a.value - b.value : b.value - a.value);
-    const maxVal = Math.max(...moverStats.map(m => m.value));
-    return moverStats.slice(0, 5).map((m, i) => ({ ...m, pct: maxVal > 0 ? (m.value / maxVal) * 100 : 0, rank: i }));
-  })();
-
   /* Render a single row based on metric type */
   const renderRow = (row: string[], i: number) => {
     const inner = (() => {
@@ -923,29 +898,47 @@ const DetailScreen: React.FC<{
           </div>
         </div>
 
-        {/* By Mover Breakdown */}
-        {moverBreakdown && (
-          <div style={{ backgroundColor: '#FFFFFF', borderRadius: 16, padding: 16, marginBottom: 16 } as any}>
-            <span style={{ fontFamily: F, fontSize: 13, fontWeight: 600, color: colors.gray[400], textTransform: 'uppercase', letterSpacing: 0.8, display: 'block', marginBottom: 12 } as any}>
-              By Mover
-            </span>
-            {moverBreakdown.map((m, i) => (
-              <div key={m.name} style={{ marginBottom: i < moverBreakdown.length - 1 ? 10 : 0 } as any}>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 } as any}>
-                  <span style={{ fontFamily: F, fontSize: 13, fontWeight: 500, color: colors.gray[700] } as any}>{m.name}</span>
-                  <span style={{ fontFamily: F, fontSize: 13, fontWeight: 700, color: i === 0 ? config.color : colors.gray[600] } as any}>{m.label}</span>
+        {/* Rating Distribution (only for rating metric) */}
+        {metric === 'rating' && (() => {
+          const distribution = [
+            { stars: 5, count: 28, pct: 56 },
+            { stars: 4, count: 14, pct: 28 },
+            { stars: 3, count: 5, pct: 10 },
+            { stars: 2, count: 2, pct: 4 },
+            { stars: 1, count: 1, pct: 2 },
+          ];
+          const total = distribution.reduce((s, d) => s + d.count, 0);
+          return (
+            <div style={{ backgroundColor: '#FFFFFF', borderRadius: 16, padding: 16, marginBottom: 16 } as any}>
+              <span style={{ fontFamily: F, fontSize: 13, fontWeight: 600, color: colors.gray[400], textTransform: 'uppercase', letterSpacing: 0.8, display: 'block', marginBottom: 14 } as any}>
+                Rating Distribution
+              </span>
+              {distribution.map(d => (
+                <div key={d.stars} style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 } as any}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 3, width: 36, flexShrink: 0 } as any}>
+                    <span style={{ fontFamily: F, fontSize: 13, fontWeight: 600, color: colors.gray[700] } as any}>{d.stars}</span>
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="#F59E0B"><path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/></svg>
+                  </div>
+                  <div style={{ flex: 1, height: 8, backgroundColor: '#EFF2F7', borderRadius: 4, overflow: 'hidden' } as any}>
+                    <div style={{
+                      height: '100%', borderRadius: 4,
+                      width: `${(d.count / Math.max(...distribution.map(x => x.count))) * 100}%`,
+                      backgroundColor: d.stars >= 4 ? '#F59E0B' : d.stars === 3 ? colors.gray[400] : colors.error[400],
+                      transition: 'width 0.5s ease',
+                    } as any} />
+                  </div>
+                  <span style={{ fontFamily: F, fontSize: 13, fontWeight: 600, color: colors.gray[600], width: 50, textAlign: 'right', flexShrink: 0 } as any}>
+                    {d.count} ({d.pct}%)
+                  </span>
                 </div>
-                <div style={{ height: 6, backgroundColor: '#EFF2F7', borderRadius: 3, overflow: 'hidden' } as any}>
-                  <div style={{
-                    height: '100%', borderRadius: 3, width: `${m.pct}%`,
-                    backgroundColor: i === 0 ? config.color : `${config.color}60`,
-                    transition: 'width 0.5s ease',
-                  } as any} />
-                </div>
+              ))}
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 8, paddingTop: 10, borderTop: '1px solid #EFF2F7' } as any}>
+                <span style={{ fontFamily: F, fontSize: 12, color: colors.gray[400] } as any}>Total reviews</span>
+                <span style={{ fontFamily: F, fontSize: 13, fontWeight: 700, color: colors.gray[700] } as any}>{total}</span>
               </div>
-            ))}
-          </div>
-        )}
+            </div>
+          );
+        })()}
 
         {/* Row List */}
         {data.rows.map((row, i) => (
