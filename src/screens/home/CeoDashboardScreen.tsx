@@ -312,44 +312,52 @@ const TOP_MOVERS = [
 ];
 
 /* Mock employee detail data */
+interface JobData {
+  date: string; client: string; route: string; amount: string; rating: string;
+  status: 'Completed' | 'In Progress';
+  rooms: number; distance: string; duration: string;
+  crew: number; items: string;
+  clientPhone: string; notes: string;
+}
+
 const MOVER_DETAILS: Record<string, {
   onTime: string; cancellation: string; avgTime: string;
   rating: string; totalRevenue: number; completedMoves: number;
-  recentJobs: { date: string; client: string; route: string; amount: string; rating: string }[];
+  recentJobs: JobData[];
 }> = {
   'Dmitriy K.': {
     onTime: '98%', cancellation: '0.8%', avgTime: '3.4h',
     rating: '4.9', totalRevenue: 18200, completedMoves: 34,
     recentJobs: [
-      { date: 'Mar 23', client: 'Sarah J.', route: 'Hollywood → Pasadena', amount: '$780', rating: '5.0' },
-      { date: 'Mar 22', client: 'Tom W.', route: 'Venice → Beverly Hills', amount: '$920', rating: '5.0' },
-      { date: 'Mar 21', client: 'David C.', route: 'Westwood → Culver City', amount: '$670', rating: '4.8' },
-      { date: 'Mar 20', client: 'Jason M.', route: 'Brentwood → Marina', amount: '$1,100', rating: '4.9' },
+      { date: 'Mar 23', client: 'Sarah J.', route: 'Hollywood → Pasadena', amount: '$780', rating: '5.0', status: 'Completed', rooms: 3, distance: '12 mi', duration: '3.5h', crew: 2, items: '42 boxes, 6 furniture', clientPhone: '(310) 555-0142', notes: 'Fragile items in bedroom' },
+      { date: 'Mar 22', client: 'Tom W.', route: 'Venice → Beverly Hills', amount: '$920', rating: '5.0', status: 'Completed', rooms: 3, distance: '8 mi', duration: '4.0h', crew: 3, items: '55 boxes, 8 furniture', clientPhone: '(310) 555-0198', notes: 'Piano on 2nd floor' },
+      { date: 'Mar 21', client: 'David C.', route: 'Westwood → Culver City', amount: '$670', rating: '4.8', status: 'Completed', rooms: 2, distance: '5 mi', duration: '2.8h', crew: 2, items: '30 boxes, 4 furniture', clientPhone: '(424) 555-0267', notes: 'No elevator, 3rd floor' },
+      { date: 'Mar 20', client: 'Jason M.', route: 'Brentwood → Marina', amount: '$1,100', rating: '4.9', status: 'Completed', rooms: 4, distance: '6 mi', duration: '5.1h', crew: 3, items: '68 boxes, 12 furniture', clientPhone: '(310) 555-0334', notes: 'Large dining table, needs wrapping' },
     ],
   },
   'Alex M.': {
     onTime: '95%', cancellation: '1.2%', avgTime: '3.8h',
     rating: '4.8', totalRevenue: 15600, completedMoves: 28,
     recentJobs: [
-      { date: 'Mar 23', client: 'Mike R.', route: 'DTLA → Santa Monica', amount: '$1,250', rating: '4.7' },
-      { date: 'Mar 22', client: 'Lisa K.', route: 'Burbank → Glendale', amount: '$540', rating: '4.8' },
-      { date: 'Mar 20', client: 'Jason M.', route: 'Brentwood → Marina', amount: '$1,100', rating: '4.9' },
+      { date: 'Mar 23', client: 'Mike R.', route: 'DTLA → Santa Monica', amount: '$1,250', rating: '4.7', status: 'In Progress', rooms: 4, distance: '18 mi', duration: '5.2h', crew: 3, items: '72 boxes, 10 furniture', clientPhone: '(213) 555-0411', notes: 'Office move, fragile electronics' },
+      { date: 'Mar 22', client: 'Lisa K.', route: 'Burbank → Glendale', amount: '$540', rating: '4.8', status: 'Completed', rooms: 2, distance: '4 mi', duration: '2.1h', crew: 2, items: '24 boxes, 3 furniture', clientPhone: '(818) 555-0523', notes: '' },
+      { date: 'Mar 20', client: 'Jason M.', route: 'Brentwood → Marina', amount: '$1,100', rating: '4.9', status: 'Completed', rooms: 4, distance: '6 mi', duration: '4.8h', crew: 3, items: '68 boxes, 12 furniture', clientPhone: '(310) 555-0334', notes: 'Large dining table' },
     ],
   },
   'James L.': {
     onTime: '92%', cancellation: '2.5%', avgTime: '4.1h',
     rating: '4.7', totalRevenue: 12400, completedMoves: 22,
     recentJobs: [
-      { date: 'Mar 22', client: 'Tom W.', route: 'Venice → Beverly Hills', amount: '$920', rating: '4.6' },
-      { date: 'Mar 21', client: 'Anna P.', route: 'Silver Lake → Echo Park', amount: '$380', rating: '4.8' },
+      { date: 'Mar 22', client: 'Tom W.', route: 'Venice → Beverly Hills', amount: '$920', rating: '4.6', status: 'Completed', rooms: 3, distance: '8 mi', duration: '4.0h', crew: 2, items: '50 boxes, 7 furniture', clientPhone: '(310) 555-0198', notes: '' },
+      { date: 'Mar 21', client: 'Anna P.', route: 'Silver Lake → Echo Park', amount: '$380', rating: '4.8', status: 'Completed', rooms: 1, distance: '3 mi', duration: '1.5h', crew: 2, items: '15 boxes, 2 furniture', clientPhone: '(323) 555-0617', notes: 'Studio apartment' },
     ],
   },
   'Carlos R.': {
     onTime: '97%', cancellation: '0.5%', avgTime: '3.6h',
     rating: '4.9', totalRevenue: 10800, completedMoves: 19,
     recentJobs: [
-      { date: 'Mar 21', client: 'Anna P.', route: 'Silver Lake → Echo Park', amount: '$380', rating: '5.0' },
-      { date: 'Mar 19', client: 'Grace L.', route: 'WeHo → Culver City', amount: '$720', rating: '4.9' },
+      { date: 'Mar 21', client: 'Anna P.', route: 'Silver Lake → Echo Park', amount: '$380', rating: '5.0', status: 'Completed', rooms: 1, distance: '3 mi', duration: '1.5h', crew: 2, items: '15 boxes, 2 furniture', clientPhone: '(323) 555-0617', notes: 'Studio apartment' },
+      { date: 'Mar 19', client: 'Grace L.', route: 'WeHo → Culver City', amount: '$720', rating: '4.9', status: 'Completed', rooms: 2, distance: '7 mi', duration: '3.2h', crew: 2, items: '35 boxes, 5 furniture', clientPhone: '(424) 555-0789', notes: 'Parking tricky on destination street' },
     ],
   },
 };
@@ -824,7 +832,8 @@ const MoverDetailScreen: React.FC<{
   mover: typeof TOP_MOVERS[0];
   rank: number;
   onBack: () => void;
-}> = ({ mover, rank, onBack }) => {
+  onJobPress?: (job: JobData, moverName: string) => void;
+}> = ({ mover, rank, onBack, onJobPress }) => {
   const detail = MOVER_DETAILS[mover.name];
   if (!detail) return null;
 
@@ -905,10 +914,17 @@ const MoverDetailScreen: React.FC<{
           </span>
           {detail.recentJobs.map((job, i) => (
             <StaggerItem key={i} index={i}>
-            <div style={{ backgroundColor: '#FFFFFF', borderRadius: 16, padding: '14px 16px', marginBottom: 8 } as any}>
+            <div
+              className="ceo-card-interactive"
+              onClick={() => onJobPress?.(job, mover.name)}
+              style={{ backgroundColor: '#FFFFFF', borderRadius: 16, padding: '14px 16px', marginBottom: 8, cursor: 'pointer' } as any}
+            >
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 } as any}>
                 <span style={{ fontFamily: F, fontSize: 15, fontWeight: 600, color: colors.gray[900] } as any}>{job.client}</span>
-                <span style={{ fontFamily: F, fontSize: 15, fontWeight: 700, color: colors.gray[900] } as any}>{job.amount}</span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 } as any}>
+                  <span style={{ fontFamily: F, fontSize: 15, fontWeight: 700, color: colors.gray[900] } as any}>{job.amount}</span>
+                  <ChevronRightIcon color={colors.gray[200]} />
+                </div>
               </div>
               <span style={{ fontFamily: F, fontSize: 13, color: colors.gray[500], display: 'block', marginBottom: 4 } as any}>{job.route}</span>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8 } as any}>
@@ -929,6 +945,204 @@ const MoverDetailScreen: React.FC<{
 };
 
 /* ═══════════════════════════════════════════
+   Job Detail Screen (move detail from employee)
+   ═══════════════════════════════════════════ */
+
+/* Small inline icons for job detail */
+const MapPinIcon = ({ color, size = 16 }: { color: string; size?: number }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 1 1 18 0z" stroke={color} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+    <circle cx="12" cy="10" r="3" stroke={color} strokeWidth="1.8"/>
+  </svg>
+);
+
+const ClockIcon = ({ color, size = 16 }: { color: string; size?: number }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+    <circle cx="12" cy="12" r="10" stroke={color} strokeWidth="1.8"/>
+    <path d="M12 6V12L16 14" stroke={color} strokeWidth="1.8" strokeLinecap="round"/>
+  </svg>
+);
+
+const BoxIcon = ({ color, size = 16 }: { color: string; size?: number }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+    <path d="M21 16V8a2 2 0 0 0-1-1.73L13 2.27a2 2 0 0 0-2 0L4 6.27A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" stroke={color} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+    <path d="M3.27 6.96L12 12.01L20.73 6.96M12 22.08V12" stroke={color} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+  </svg>
+);
+
+const UsersIcon = ({ color, size = 16 }: { color: string; size?: number }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" stroke={color} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+    <circle cx="9" cy="7" r="4" stroke={color} strokeWidth="1.8"/>
+    <path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" stroke={color} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+  </svg>
+);
+
+const PhoneIcon = ({ color, size = 16 }: { color: string; size?: number }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+    <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.362 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.338 1.85.573 2.81.7A2 2 0 0 1 22 16.92z" stroke={color} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+  </svg>
+);
+
+const NoteIcon = ({ color, size = 16 }: { color: string; size?: number }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" stroke={color} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+    <path d="M14 2v6h6M16 13H8M16 17H8M10 9H8" stroke={color} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+  </svg>
+);
+
+const JobDetailScreen: React.FC<{
+  job: JobData;
+  moverName: string;
+  onBack: () => void;
+}> = ({ job, moverName, onBack }) => {
+  const fromTo = job.route.split(' → ');
+  const from = fromTo[0] || '';
+  const to = fromTo[1] || '';
+
+  const statusColor = job.status === 'Completed' ? colors.success[500] : colors.primary[500];
+  const statusBg = job.status === 'Completed' ? colors.success[50] : colors.primary[50];
+
+  /* Detail row helper */
+  const InfoRow = ({ icon, label, value }: { icon: React.ReactNode; label: string; value: string }) => (
+    <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 0' } as any}>
+      <div style={{
+        width: 36, height: 36, borderRadius: 12, backgroundColor: '#EFF2F7',
+        display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+      } as any}>
+        {icon}
+      </div>
+      <div style={{ flex: 1, minWidth: 0 } as any}>
+        <span style={{ fontFamily: F, fontSize: 12, fontWeight: 500, color: colors.gray[400], display: 'block' } as any}>{label}</span>
+        <span style={{ fontFamily: F, fontSize: 15, fontWeight: 600, color: colors.gray[900], display: 'block', marginTop: 2 } as any}>{value}</span>
+      </div>
+    </div>
+  );
+
+  return (
+    <AnimatedPage direction="right" duration={0.3}>
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100%', backgroundColor: '#F5F5F7' } as any}>
+      {/* Nav bar */}
+      <div style={{
+        display: 'flex', alignItems: 'center', padding: '14px 16px',
+        backgroundColor: '#F5F5F7', position: 'relative', minHeight: 44,
+      } as any}>
+        <div onClick={onBack} style={{ display: 'flex', alignItems: 'center', cursor: 'pointer', zIndex: 1 } as any}>
+          <BackIcon />
+        </div>
+        <span style={{
+          fontFamily: F, fontSize: 17, fontWeight: 600, color: colors.gray[900],
+          position: 'absolute', left: 0, right: 0, textAlign: 'center', pointerEvents: 'none',
+        } as any}>
+          Move Details
+        </span>
+      </div>
+
+      <div style={{ flex: 1, overflowY: 'auto', padding: '0 16px' } as any}>
+        {/* Hero card — client + amount + status */}
+        <div style={{
+          backgroundColor: '#FFFFFF', borderRadius: 16, padding: 20, marginBottom: 12,
+          animation: 'scaleIn 0.35s cubic-bezier(0.22,1,0.36,1) both',
+        } as any}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 } as any}>
+            <div>
+              <span style={{ fontFamily: F, fontSize: 20, fontWeight: 800, color: colors.gray[900], display: 'block', letterSpacing: -0.3 } as any}>
+                {job.client}
+              </span>
+              <span style={{ fontFamily: F, fontSize: 13, color: colors.gray[400], display: 'block', marginTop: 4 } as any}>
+                {job.date}, 2026
+              </span>
+            </div>
+            <span style={{
+              fontFamily: F, fontSize: 12, fontWeight: 600, color: statusColor,
+              backgroundColor: statusBg, padding: '6px 14px', borderRadius: 12,
+            } as any}>
+              {job.status}
+            </span>
+          </div>
+          <span style={{ fontFamily: F, fontSize: 32, fontWeight: 800, color: colors.gray[900], display: 'block', letterSpacing: -1 } as any}>
+            {job.amount}
+          </span>
+        </div>
+
+        {/* Route card */}
+        <div style={{
+          backgroundColor: '#FFFFFF', borderRadius: 16, padding: 20, marginBottom: 12,
+          animation: 'fadeInUp 0.4s cubic-bezier(0.22,1,0.36,1) 0.06s both',
+        } as any}>
+          <span style={{ fontFamily: F, fontSize: 13, fontWeight: 600, color: colors.gray[400], display: 'block', marginBottom: 14 } as any}>
+            Route
+          </span>
+          <div style={{ display: 'flex', alignItems: 'stretch', gap: 12 } as any}>
+            {/* Timeline dots */}
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: 20, paddingTop: 4 } as any}>
+              <div style={{ width: 10, height: 10, borderRadius: 5, backgroundColor: colors.primary[500], flexShrink: 0 } as any} />
+              <div style={{ width: 2, flex: 1, backgroundColor: colors.gray[200], margin: '4px 0' } as any} />
+              <div style={{ width: 10, height: 10, borderRadius: 5, backgroundColor: colors.success[500], flexShrink: 0 } as any} />
+            </div>
+            {/* From / To */}
+            <div style={{ flex: 1 } as any}>
+              <div style={{ marginBottom: 20 } as any}>
+                <span style={{ fontFamily: F, fontSize: 11, fontWeight: 500, color: colors.gray[400], display: 'block' } as any}>From</span>
+                <span style={{ fontFamily: F, fontSize: 16, fontWeight: 700, color: colors.gray[900], display: 'block', marginTop: 2 } as any}>{from}</span>
+              </div>
+              <div>
+                <span style={{ fontFamily: F, fontSize: 11, fontWeight: 500, color: colors.gray[400], display: 'block' } as any}>To</span>
+                <span style={{ fontFamily: F, fontSize: 16, fontWeight: 700, color: colors.gray[900], display: 'block', marginTop: 2 } as any}>{to}</span>
+              </div>
+            </div>
+            {/* Distance */}
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', justifyContent: 'center' } as any}>
+              <span style={{ fontFamily: F, fontSize: 22, fontWeight: 800, color: colors.primary[500] } as any}>{job.distance}</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Details card */}
+        <div style={{
+          backgroundColor: '#FFFFFF', borderRadius: 16, padding: '8px 20px', marginBottom: 12,
+          animation: 'fadeInUp 0.4s cubic-bezier(0.22,1,0.36,1) 0.12s both',
+        } as any}>
+          <InfoRow icon={<ClockIcon color={colors.gray[500]} />} label="Duration" value={job.duration} />
+          <div style={{ height: 1, backgroundColor: '#EFF2F7' } as any} />
+          <InfoRow icon={<BoxIcon color={colors.gray[500]} />} label="Items" value={`${job.rooms} rooms · ${job.items}`} />
+          <div style={{ height: 1, backgroundColor: '#EFF2F7' } as any} />
+          <InfoRow icon={<UsersIcon color={colors.gray[500]} />} label="Crew" value={`${job.crew} movers · ${moverName}`} />
+          <div style={{ height: 1, backgroundColor: '#EFF2F7' } as any} />
+          <InfoRow icon={<PhoneIcon color={colors.gray[500]} />} label="Client Phone" value={job.clientPhone} />
+          {job.notes ? (
+            <>
+              <div style={{ height: 1, backgroundColor: '#EFF2F7' } as any} />
+              <InfoRow icon={<NoteIcon color={colors.gray[500]} />} label="Notes" value={job.notes} />
+            </>
+          ) : null}
+        </div>
+
+        {/* Rating card */}
+        <div style={{
+          backgroundColor: '#FFFFFF', borderRadius: 16, padding: 20, marginBottom: 12,
+          animation: 'fadeInUp 0.4s cubic-bezier(0.22,1,0.36,1) 0.18s both',
+        } as any}>
+          <span style={{ fontFamily: F, fontSize: 13, fontWeight: 600, color: colors.gray[400], display: 'block', marginBottom: 10 } as any}>
+            Client Rating
+          </span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 } as any}>
+            <StarIcon color={colors.warning[500]} size={22} />
+            <span style={{ fontFamily: F, fontSize: 28, fontWeight: 800, color: colors.gray[900], letterSpacing: -0.5 } as any}>
+              {job.rating}
+            </span>
+            <span style={{ fontFamily: F, fontSize: 14, color: colors.gray[400], marginLeft: 4 } as any}>/ 5.0</span>
+          </div>
+        </div>
+
+        <div style={{ height: 48 } as any} />
+      </div>
+    </div>
+    </AnimatedPage>
+  );
+};
+
+/* ═══════════════════════════════════════════
    Main Component
    ═══════════════════════════════════════════ */
 
@@ -939,6 +1153,7 @@ export const CeoDashboardScreen: React.FC<CeoDashboardScreenProps> = ({
   const [period, setPeriod] = useState<'week' | 'month'>('week');
   const [drillDown, setDrillDown] = useState<MetricKey | null>(null);
   const [selectedMover, setSelectedMover] = useState<number | null>(null);
+  const [selectedJob, setSelectedJob] = useState<{ job: JobData; moverName: string } | null>(null);
 
   /* Inject animation CSS on mount */
   useEffect(() => { injectAnimationCSS(); }, []);
@@ -985,15 +1200,22 @@ export const CeoDashboardScreen: React.FC<CeoDashboardScreenProps> = ({
   );
 
   return (
-    <SafeAreaView style={[s.safeArea, (drillDown || selectedMover !== null) && { backgroundColor: '#F5F5F7' }]}>
-      <View style={[s.container, (drillDown || selectedMover !== null) && { backgroundColor: '#F5F5F7' }]}>
+    <SafeAreaView style={[s.safeArea, (drillDown || selectedMover !== null || selectedJob) && { backgroundColor: '#F5F5F7' }]}>
+      <View style={[s.container, (drillDown || selectedMover !== null || selectedJob) && { backgroundColor: '#F5F5F7' }]}>
         <StatusBarMock onTimeTap={onBack} />
 
-        {selectedMover !== null ? (
+        {selectedJob ? (
+          <JobDetailScreen
+            job={selectedJob.job}
+            moverName={selectedJob.moverName}
+            onBack={() => setSelectedJob(null)}
+          />
+        ) : selectedMover !== null ? (
           <MoverDetailScreen
             mover={TOP_MOVERS[selectedMover]}
             rank={selectedMover + 1}
             onBack={() => setSelectedMover(null)}
+            onJobPress={(job: JobData, moverName: string) => setSelectedJob({ job, moverName })}
           />
         ) : drillDown ? (
           <DetailScreen metric={drillDown} onBack={() => setDrillDown(null)} />
