@@ -55,6 +55,10 @@ export const PaymentMethodsScreen: React.FC<PaymentMethodsScreenProps> = ({
   const [cards, setCards] = useState<PaymentCard[]>(initialCards);
   const [selectedCard, setSelectedCard] = useState<PaymentCard | null>(null);
   const [scaleAnim] = useState(new Animated.Value(0));
+  const [defaultMethod, setDefaultMethod] = useState<'bank' | string>(role === 'ceo' ? 'bank' : initialCards.find(c => c.isDefault)?.id || '');
+  const [bankEditMode, setBankEditMode] = useState(false);
+  const [bankName, setBankName] = useState('Chase Business Checking');
+  const [bankAccount, setBankAccount] = useState('****6789');
 
   // Form fields for add card
   const [cardNumber, setCardNumber] = useState('');
@@ -274,117 +278,91 @@ export const PaymentMethodsScreen: React.FC<PaymentMethodsScreenProps> = ({
         <ScrollView style={{ flex: 1 }} contentContainerStyle={{ paddingBottom: 24 }}>
           {hasCards ? (
             <View style={{ paddingHorizontal: 16, paddingVertical: 16, gap: 12 }}>
-              {/* Company Bank Account Section - CEO only */}
+              {/* Company Bank Account — CEO only */}
               {role === 'ceo' && (
-                <View style={{ backgroundColor: '#FFFFFF', borderRadius: 16, overflow: 'hidden', marginBottom: 12 }}>
-                  <View style={{ paddingHorizontal: 16, paddingTop: 16, paddingBottom: 8 }}>
-                    {Platform.OS === 'web' && (
-                      <span style={{
-                        fontSize: 12,
-                        fontWeight: 600,
-                        color: colors.gray[400],
-                        textTransform: 'uppercase',
-                        letterSpacing: 0.8,
-                        fontFamily: 'Inter, system-ui, sans-serif',
-                      } as any}>
-                        COMPANY BANK ACCOUNT
-                      </span>
-                    )}
-                  </View>
+                <Pressable
+                  onPress={() => { setDefaultMethod('bank'); setCards(cards.map(c => ({ ...c, isDefault: false }))); }}
+                  style={{ backgroundColor: '#FFFFFF', borderRadius: 16, overflow: 'hidden', marginBottom: 4 } as any}
+                >
                   <View style={{
-                    flexDirection: 'row',
-                    alignItems: 'center',
-                    gap: 14,
-                    paddingHorizontal: 16,
-                    paddingVertical: 16,
-                    borderBottomWidth: 1,
-                    borderBottomColor: colors.gray[100],
+                    flexDirection: 'row', alignItems: 'center', gap: 14,
+                    paddingHorizontal: 16, paddingTop: 16, paddingBottom: 16,
                   }}>
+                    {/* Radio dot */}
+                    <View style={{
+                      width: 22, height: 22, borderRadius: 11,
+                      borderWidth: 2, borderColor: defaultMethod === 'bank' ? colors.primary[500] : colors.gray[300],
+                      alignItems: 'center', justifyContent: 'center',
+                    }}>
+                      {defaultMethod === 'bank' && (
+                        <View style={{ width: 12, height: 12, borderRadius: 6, backgroundColor: colors.primary[500] }} />
+                      )}
+                    </View>
                     {renderBankBuildingSVG()}
                     <View style={{ flex: 1 }}>
                       {Platform.OS === 'web' && (
                         <>
-                          <span style={{
-                            fontSize: 15,
-                            fontWeight: 600,
-                            color: colors.gray[900],
-                            fontFamily: 'Inter, system-ui, sans-serif',
-                          } as any}>
-                            Chase Business Checking
-                          </span>
-                          <span style={{
-                            fontSize: 13,
-                            color: colors.gray[500],
-                            fontFamily: 'Inter, system-ui, sans-serif',
-                          } as any}>
-                            ****6789
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 8 } as any}>
+                            <span style={{ fontSize: 15, fontWeight: 600, color: colors.gray[900], fontFamily: 'Inter, system-ui, sans-serif' } as any}>
+                              {bankName}
+                            </span>
+                            <span style={{ fontSize: 10, fontWeight: 600, color: colors.success[600], backgroundColor: colors.success[50], padding: '2px 6px', borderRadius: 4, fontFamily: 'Inter, system-ui, sans-serif' } as any}>
+                              Connected
+                            </span>
+                          </div>
+                          <span style={{ fontSize: 13, color: colors.gray[500], fontFamily: 'Inter, system-ui, sans-serif', marginTop: 2 } as any}>
+                            {bankAccount}
                           </span>
                         </>
                       )}
                     </View>
-                    <View style={{
-                      backgroundColor: colors.success[50],
-                      paddingHorizontal: 8,
-                      paddingVertical: 3,
-                      borderRadius: 6,
-                    }}>
+                    <Pressable onPress={(e: any) => { e.stopPropagation?.(); setBankEditMode(!bankEditMode); }} hitSlop={8}>
                       {Platform.OS === 'web' && (
-                        <span style={{
-                          fontSize: 11,
-                          fontWeight: 600,
-                          color: colors.success[600],
-                          fontFamily: 'Inter, system-ui, sans-serif',
-                        } as any}>
-                          Connected
+                        <span style={{ fontSize: 13, fontWeight: 600, color: colors.primary[500], cursor: 'pointer', fontFamily: 'Inter, system-ui, sans-serif' } as any}>
+                          {bankEditMode ? 'Done' : 'Edit'}
                         </span>
                       )}
-                    </View>
+                    </Pressable>
                   </View>
-                  <Pressable style={{
-                    paddingVertical: 14,
-                    paddingHorizontal: 16,
-                    alignItems: 'center',
-                  }}>
-                    {Platform.OS === 'web' && (
-                      <span style={{
-                        fontSize: 15,
-                        fontWeight: 600,
-                        color: colors.primary[500],
-                        textAlign: 'center',
-                        cursor: 'pointer',
-                        fontFamily: 'Inter, system-ui, sans-serif',
-                      } as any}>
-                        Edit
-                      </span>
-                    )}
-                  </Pressable>
-                </View>
+                  {/* Bank edit fields */}
+                  {bankEditMode && Platform.OS === 'web' && (
+                    <div style={{ padding: '0 16px 16px', borderTop: `1px solid ${colors.gray[100]}`, paddingTop: 12 } as any}>
+                      <div style={{ marginBottom: 10 } as any}>
+                        <span style={{ fontSize: 12, fontWeight: 600, color: colors.gray[400], textTransform: 'uppercase', letterSpacing: 0.6, display: 'block', marginBottom: 6, fontFamily: 'Inter, system-ui, sans-serif' } as any}>Bank Name</span>
+                        <input value={bankName} onChange={(e: any) => setBankName(e.target.value)} style={{ fontFamily: 'Inter, system-ui, sans-serif', fontSize: 15, fontWeight: 400, color: colors.gray[900], backgroundColor: colors.gray[50], border: 'none', outline: 'none', width: '100%', padding: '10px 12px', borderRadius: 10 } as any} />
+                      </div>
+                      <div style={{} as any}>
+                        <span style={{ fontSize: 12, fontWeight: 600, color: colors.gray[400], textTransform: 'uppercase', letterSpacing: 0.6, display: 'block', marginBottom: 6, fontFamily: 'Inter, system-ui, sans-serif' } as any}>Account Number</span>
+                        <input value={bankAccount} onChange={(e: any) => setBankAccount(e.target.value)} style={{ fontFamily: 'Inter, system-ui, sans-serif', fontSize: 15, fontWeight: 400, color: colors.gray[900], backgroundColor: colors.gray[50], border: 'none', outline: 'none', width: '100%', padding: '10px 12px', borderRadius: 10 } as any} />
+                      </div>
+                    </div>
+                  )}
+                </Pressable>
               )}
 
-              {/* Personal Cards Header - CEO only */}
+              {/* Personal Cards label — CEO only, outside card */}
               {role === 'ceo' && (
-                <View style={{ paddingHorizontal: 0, paddingBottom: 4 }}>
+                <View style={{ paddingTop: 8, paddingBottom: 4 }}>
                   {Platform.OS === 'web' && (
-                    <span style={{
-                      fontSize: 12,
-                      fontWeight: 600,
-                      color: colors.gray[400],
-                      textTransform: 'uppercase',
-                      letterSpacing: 0.8,
-                      fontFamily: 'Inter, system-ui, sans-serif',
-                    } as any}>
-                      PERSONAL CARDS
+                    <span style={{ fontSize: 12, fontWeight: 600, color: colors.gray[400], textTransform: 'uppercase', letterSpacing: 0.8, fontFamily: 'Inter, system-ui, sans-serif' } as any}>
+                      Personal Cards
                     </span>
                   )}
                 </View>
               )}
 
-              {cards.map(card => (
+              {cards.map(card => {
+                const isDefault = role === 'ceo' ? defaultMethod === card.id : card.isDefault;
+                return (
                 <Pressable
                   key={card.id}
                   onPress={() => {
-                    setSelectedCard(card);
-                    setView('cardDetail');
+                    if (role === 'ceo') {
+                      setDefaultMethod(card.id);
+                    } else {
+                      setSelectedCard(card);
+                      setView('cardDetail');
+                    }
                   }}
                   style={{
                     flexDirection: 'row',
@@ -392,34 +370,31 @@ export const PaymentMethodsScreen: React.FC<PaymentMethodsScreenProps> = ({
                     justifyContent: 'space-between',
                     paddingHorizontal: 16,
                     paddingVertical: 16,
-                    ...(Platform.OS === 'web' ? {
-                      backgroundColor: '#FFFFFF',
-                    } : { backgroundColor: '#FFFFFF' }),
+                    backgroundColor: '#FFFFFF',
                     borderRadius: 14,
                   } as any}
                 >
                   <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12, flex: 1 }}>
+                    {/* Radio dot for CEO */}
+                    {role === 'ceo' && (
+                      <View style={{
+                        width: 22, height: 22, borderRadius: 11,
+                        borderWidth: 2, borderColor: isDefault ? colors.primary[500] : colors.gray[300],
+                        alignItems: 'center', justifyContent: 'center',
+                      }}>
+                        {isDefault && (
+                          <View style={{ width: 12, height: 12, borderRadius: 6, backgroundColor: colors.primary[500] }} />
+                        )}
+                      </View>
+                    )}
                     {card.type === 'visa' ? renderVisaIcon() : renderMastercardIcon()}
                     <View style={{ flexDirection: 'column', gap: 4 }}>
                       {Platform.OS === 'web' && (
                         <>
-                          <span
-                            style={{
-                              fontSize: '15px',
-                              fontWeight: '500',
-                              color: colors.gray[800],
-                              fontFamily: 'Inter, system-ui, sans-serif',
-                            } as any}
-                          >
+                          <span style={{ fontSize: '15px', fontWeight: '500', color: colors.gray[800], fontFamily: 'Inter, system-ui, sans-serif' } as any}>
                             {card.type === 'visa' ? 'Visa' : 'Mastercard'} •••• {card.last4}
                           </span>
-                          <span
-                            style={{
-                              fontSize: '12px',
-                              color: colors.gray[600],
-                              fontFamily: 'Inter, system-ui, sans-serif',
-                            } as any}
-                          >
+                          <span style={{ fontSize: '12px', color: colors.gray[600], fontFamily: 'Inter, system-ui, sans-serif' } as any}>
                             Expires {card.expiry}
                           </span>
                         </>
@@ -427,40 +402,20 @@ export const PaymentMethodsScreen: React.FC<PaymentMethodsScreenProps> = ({
                     </View>
                   </View>
                   <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
-                    {card.isDefault && (
-                      <View
-                        style={{
-                          backgroundColor: colors.primary[500],
-                          paddingHorizontal: 8,
-                          paddingVertical: 4,
-                          borderRadius: 12,
-                        }}
-                      >
+                    {!role && card.isDefault && (
+                      <View style={{ backgroundColor: colors.primary[500], paddingHorizontal: 8, paddingVertical: 4, borderRadius: 12 }}>
                         {Platform.OS === 'web' && (
-                          <span
-                            style={{
-                              fontSize: '11px',
-                              fontWeight: '600',
-                              color: colors.white,
-                              fontFamily: 'Inter, system-ui, sans-serif',
-                            } as any}
-                          >
-                            Default
-                          </span>
+                          <span style={{ fontSize: '11px', fontWeight: '600', color: colors.white, fontFamily: 'Inter, system-ui, sans-serif' } as any}>Default</span>
                         )}
                       </View>
                     )}
-                    {renderChevronRightSVG()}
+                    <Pressable onPress={(e: any) => { e.stopPropagation?.(); setSelectedCard(card); setView('cardDetail'); }} hitSlop={8}>
+                      {renderChevronRightSVG()}
+                    </Pressable>
                   </View>
                 </Pressable>
-              ))}
-              <View style={{ marginTop: 4 }}>
-                <Button
-                  title="Add Card"
-                  variant="secondary"
-                  onPress={() => setView('addCard')}
-                />
-              </View>
+                );
+              })}
             </View>
           ) : (
             <View
