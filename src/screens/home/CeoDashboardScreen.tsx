@@ -985,6 +985,7 @@ const jobToMoveDetail = (job: JobData, moverName: string): MoveDetailData => {
   const furnitureCount = parseInt(job.items.match(/(\d+)\s*furniture/)?.[1] || '0');
   const rooms = generateRooms(job.rooms);
   const totalItems = rooms.reduce((sum, r) => sum + r.items.reduce((s, it) => s + it.qty, 0), 0);
+  const price = parseInt(job.amount.replace(/[$,]/g, '')) || 0;
 
   return {
     id: `job-${job.date}-${job.client}`,
@@ -993,7 +994,7 @@ const jobToMoveDetail = (job: JobData, moverName: string): MoveDetailData => {
     to: fromTo[1] || '',
     date: job.date,
     time: '10:00 AM',
-    price: parseInt(job.amount.replace(/[$,]/g, '')) || 0,
+    price,
     step: job.status === 'Completed' ? 'completed' : 'accepted',
     roomsCount: job.rooms,
     clientPhone: job.clientPhone,
@@ -1013,9 +1014,43 @@ const jobToMoveDetail = (job: JobData, moverName: string): MoveDetailData => {
       ? [{ name: 'Piano', quantity: 1, note: 'Upright, needs padding' }]
       : [],
     notes: job.notes,
-    planName: `${job.crew}-Mover Team`,
-    depositPaid: Math.round((parseInt(job.amount.replace(/[$,]/g, '')) || 0) * 0.2),
-  };
+    planName: price > 800 ? 'Premium' : 'Standard',
+    depositPaid: Math.round(price * 0.2),
+    // Completed-move extras
+    ...(job.status === 'Completed' ? {
+      // Client review
+      ...(job.rating ? {
+        clientReview: {
+          rating: parseFloat(job.rating),
+          text: parseFloat(job.rating) >= 4.9
+            ? 'Amazing service! Very professional and careful with all our belongings.'
+            : parseFloat(job.rating) >= 4.7
+            ? 'Great job overall, everything arrived in perfect condition.'
+            : 'Good move, would recommend.',
+          date: job.date,
+        },
+      } : {}),
+      // Mover/crew info
+      moverInfo: {
+        name: moverName,
+        crewSize: job.crew,
+        rating: parseFloat(job.rating) || 4.8,
+      },
+      // Actual duration
+      actualDuration: job.duration,
+      // Stage durations
+      stageDurations: {
+        loading: `${Math.round(parseFloat(job.duration) * 0.35 * 60)}m`,
+        driving: `${Math.round(parseFloat(job.distance) * 2.5)}m`,
+        unloading: `${Math.round(parseFloat(job.duration) * 0.30 * 60)}m`,
+      },
+      // Earnings for CEO
+      earningsSummary: {
+        totalEarned: price,
+        itemsMoved: totalItems,
+      },
+    } : {}),
+  } as MoveDetailData;
 };
 
 /* ═══════════════════════════════════════════

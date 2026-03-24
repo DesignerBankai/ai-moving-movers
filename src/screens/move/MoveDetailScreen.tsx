@@ -346,6 +346,29 @@ export const MoveDetailScreen: React.FC<MoveDetailScreenProps> = ({
               {renderSteps()}
             </div>
 
+            {/* ── COMPLETION SUMMARY (completed moves only) ── */}
+            {isCompleted && (move as any).earningsSummary && (
+              <div style={{ backgroundColor: '#FFFFFF', borderRadius: 16, overflow: 'hidden', marginTop: 10, padding: 16 } as any}>
+                <div style={{ display: 'flex', flexDirection: 'row' as const, gap: 10 } as any}>
+                  {[
+                    { value: (move as any).actualDuration || '—', label: 'Duration' },
+                    { value: `$${((move as any).earningsSummary.totalEarned || 0).toLocaleString()}`, label: 'Earned' },
+                    { value: String((move as any).earningsSummary.itemsMoved || move.totalItems), label: 'Items' },
+                    { value: (move as any).clientReview ? String((move as any).clientReview.rating) : '—', label: 'Rating' },
+                  ].map((st, i) => (
+                    <div key={i} style={{
+                      flex: 1, display: 'flex', flexDirection: 'column' as const, alignItems: 'center',
+                      paddingTop: 14, paddingBottom: 12,
+                      backgroundColor: i === 1 ? `${colors.success[500]}12` : '#EFF2F7', borderRadius: 12,
+                    } as any}>
+                      <span style={{ fontFamily: font, fontSize: 20, fontWeight: 700, color: i === 1 ? colors.success[600] : colors.gray[900] } as any}>{st.value}</span>
+                      <span style={{ fontFamily: font, fontSize: 12, color: colors.gray[400], marginTop: 3 } as any}>{st.label}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
             {/* ── CLIENT ── */}
             <div style={{ backgroundColor: '#FFFFFF', borderRadius: 16, overflow: 'hidden', marginTop: 10 } as any}>
               <SectionHeader label="Client" />
@@ -380,6 +403,34 @@ export const MoveDetailScreen: React.FC<MoveDetailScreenProps> = ({
               </div>
             </div>
 
+            {/* ── MOVER / CREW (completed moves, CEO role) ── */}
+            {isCompleted && (move as any).moverInfo && (
+              <div style={{ backgroundColor: '#FFFFFF', borderRadius: 16, overflow: 'hidden', marginTop: 10 } as any}>
+                <SectionHeader label="Mover & Crew" />
+                <div style={{
+                  display: 'flex', flexDirection: 'row' as const, alignItems: 'center',
+                  paddingTop: 14, paddingBottom: 14, paddingLeft: 16, paddingRight: 16, gap: 14,
+                } as any}>
+                  <div style={{
+                    width: 44, height: 44, minWidth: 44, borderRadius: '50%',
+                    backgroundColor: '#EFF2F7', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+                  } as any}>
+                    <span style={{ fontFamily: font, fontSize: 16, fontWeight: 700, color: colors.primary[500] } as any}>
+                      {(move as any).moverInfo.name.split(' ').map((n: string) => n[0]).join('')}
+                    </span>
+                  </div>
+                  <div style={{ flex: 1, minWidth: 0 } as any}>
+                    <span style={{ fontFamily: font, fontSize: 16, fontWeight: 600, color: colors.gray[900], display: 'block' } as any}>{(move as any).moverInfo.name}</span>
+                    <span style={{ fontFamily: font, fontSize: 14, color: colors.gray[400], marginTop: 2, display: 'block' } as any}>Crew of {(move as any).moverInfo.crewSize}</span>
+                  </div>
+                  <div style={{ display: 'flex', flexDirection: 'row' as const, alignItems: 'center', gap: 4, flexShrink: 0 } as any}>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="#F59E0B"><path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/></svg>
+                    <span style={{ fontFamily: font, fontSize: 15, fontWeight: 700, color: colors.gray[900] } as any}>{(move as any).moverInfo.rating}</span>
+                  </div>
+                </div>
+              </div>
+            )}
+
             {/* ── PLAN & PRICING (hidden for mover) ── */}
             {role !== 'mover' && <div style={{ backgroundColor: '#FFFFFF', borderRadius: 16, overflow: 'hidden', marginTop: 10 } as any}>
               <SectionHeader label="Plan & Pricing" />
@@ -391,7 +442,16 @@ export const MoveDetailScreen: React.FC<MoveDetailScreenProps> = ({
                 first
                 last={!(move.depositPaid)}
               />
-              {(move.depositPaid ?? 0) > 0 && (
+              {isCompleted ? (
+                <Row
+                  icon={<svg width="22" height="22" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke={colors.success[500]} strokeWidth="2"/><path d="M8 12L11 15L16 9" stroke={colors.success[500]} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"/></svg>}
+                  label={`$${move.price.toLocaleString()} fully paid`}
+                  sub="Deposit + remaining balance"
+                  chip="Paid"
+                  chipColor={colors.success[500]}
+                  last
+                />
+              ) : (move.depositPaid ?? 0) > 0 ? (
                 <Row
                   icon={<svg width="22" height="22" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke={colors.success[500]} strokeWidth="2"/><path d="M8 12L11 15L16 9" stroke={colors.success[500]} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"/></svg>}
                   label={`$${move.depositPaid} deposit paid`}
@@ -400,7 +460,7 @@ export const MoveDetailScreen: React.FC<MoveDetailScreenProps> = ({
                   chipColor={colors.success[500]}
                   last
                 />
-              )}
+              ) : null}
             </div>}
 
             {/* ── ADDRESSES ── */}
@@ -418,10 +478,17 @@ export const MoveDetailScreen: React.FC<MoveDetailScreenProps> = ({
                 label={`${move.date}, ${move.time}`} sub="Moving date & time"
                 first
               />
-              <Row
-                icon={<svg width="22" height="22" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke={colors.gray[500]} strokeWidth="2"/><path d="M12 7V12L15 14" stroke={colors.gray[500]} strokeWidth="2" strokeLinecap="round"/></svg>}
-                label={move.estimatedTime} sub="Estimated drive time"
-              />
+              {isCompleted && (move as any).actualDuration ? (
+                <Row
+                  icon={<svg width="22" height="22" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke={colors.gray[500]} strokeWidth="2"/><path d="M12 7V12L15 14" stroke={colors.gray[500]} strokeWidth="2" strokeLinecap="round"/></svg>}
+                  label={(move as any).actualDuration} sub="Actual duration"
+                />
+              ) : (
+                <Row
+                  icon={<svg width="22" height="22" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke={colors.gray[500]} strokeWidth="2"/><path d="M12 7V12L15 14" stroke={colors.gray[500]} strokeWidth="2" strokeLinecap="round"/></svg>}
+                  label={move.estimatedTime} sub="Estimated drive time"
+                />
+              )}
               <Row
                 icon={<svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M3 12H6L9 6L15 18L18 12H21" stroke={colors.gray[500]} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>}
                 label={move.distance} sub="Distance" last
@@ -753,8 +820,25 @@ export const MoveDetailScreen: React.FC<MoveDetailScreenProps> = ({
                   { label: 'Client verified', sub: 'Identity and payment method confirmed', time: 'Mar 3, 16:05', color: colors.gray[300], active: false },
                   { label: 'Request created', sub: `${move.planName} plan selected by client`, time: 'Mar 4, 09:22', color: colors.warning[500], active: true },
                   { label: 'AI Scan completed', sub: `${move.totalItems} items identified across ${move.roomsCount} rooms`, time: 'Mar 5, 18:40', color: '#8B5CF6', active: true },
-                  { label: 'Order accepted', sub: 'You accepted this move request', time: 'Mar 6, 10:15', color: colors.primary[500], active: true },
-                  ...(move.depositPaid && role !== 'mover' ? [{ label: 'Deposit paid', sub: `$${move.depositPaid} via card ending 4821`, time: 'Mar 7, 14:32', color: colors.success[500], active: true }] : []),
+                  { label: 'Order accepted', sub: 'Mover accepted this move request', time: 'Mar 6, 10:15', color: colors.primary[500], active: true },
+                  ...(move.depositPaid && role !== 'mover' ? [{ label: 'Deposit paid', sub: `$${move.depositPaid} via card ending 4821`, time: 'Mar 6, 10:18', color: colors.success[500], active: true }] : []),
+                  ...(isCompleted ? (() => {
+                    const sd = (move as any).stageDurations;
+                    const loadDur = sd?.loading || '';
+                    const driveDur = sd?.driving || '';
+                    const unloadDur = sd?.unloading || '';
+                    return [
+                      { label: 'En route to pickup', sub: 'Mover heading to pickup location', time: 'Mar 8, 09:45', color: '#F79009', active: true },
+                      { label: 'Arrived at pickup', sub: 'Arrived at pickup address · 27m drive', time: 'Mar 8, 10:12', color: '#F79009', active: true },
+                      { label: 'Loading started', sub: 'Loading items into the truck', time: 'Mar 8, 10:18', color: '#F79009', active: true },
+                      { label: 'Loading complete', sub: `All items loaded${loadDur ? ` · ${loadDur} loading` : ''}`, time: 'Mar 8, 11:45', color: '#F79009', active: true },
+                      { label: 'En route to delivery', sub: 'Driving to drop-off location', time: 'Mar 8, 11:48', color: '#F79009', active: true },
+                      { label: 'Arrived at delivery', sub: `Arrived at delivery address${driveDur ? ` · ${driveDur} drive` : ''}`, time: 'Mar 8, 12:20', color: '#F79009', active: true },
+                      { label: 'Unloading started', sub: 'Unloading items at destination', time: 'Mar 8, 12:25', color: '#F79009', active: true },
+                      { label: 'Move completed', sub: `All items delivered${unloadDur ? ` · ${unloadDur} unloading` : ''}`, time: 'Mar 8, 13:30', color: colors.success[500], active: true },
+                      ...(role !== 'mover' ? [{ label: 'Remaining balance paid', sub: `$${Math.round(move.price * 0.8)} via card ending 4821`, time: 'Mar 8, 13:35', color: colors.success[500], active: true }] : []),
+                    ];
+                  })() : []),
                 ] as const).map((act, ai, arr) => (
                   <div key={ai} style={{
                     display: 'flex', flexDirection: 'row' as const, gap: 14,
@@ -795,6 +879,44 @@ export const MoveDetailScreen: React.FC<MoveDetailScreenProps> = ({
                 ))}
               </div>
             </div>
+
+            {/* ── CLIENT REVIEW (for completed moves) ── */}
+            {isCompleted && (move as any).clientReview && (
+              <div style={{ backgroundColor: '#FFFFFF', borderRadius: 16, overflow: 'hidden', marginTop: 10 } as any}>
+                <SectionHeader label="Client Review" />
+                <div style={{ paddingLeft: 16, paddingRight: 16, paddingTop: 8, paddingBottom: 16 } as any}>
+                  {/* Star rating */}
+                  <div style={{ display: 'flex', flexDirection: 'row' as const, alignItems: 'center', gap: 6, marginBottom: 10 } as any}>
+                    {[1, 2, 3, 4, 5].map(star => (
+                      <svg key={star} width="22" height="22" viewBox="0 0 24 24" fill={star <= Math.round((move as any).clientReview.rating) ? '#F59E0B' : '#E4E7EC'}>
+                        <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/>
+                      </svg>
+                    ))}
+                    <span style={{ fontFamily: font, fontSize: 16, fontWeight: 700, color: colors.gray[900], marginLeft: 6 } as any}>
+                      {(move as any).clientReview.rating}
+                    </span>
+                  </div>
+                  {/* Review text */}
+                  {(move as any).clientReview.text && (
+                    <div style={{
+                      backgroundColor: '#F0F9FF', borderRadius: 12, padding: 14,
+                    } as any}>
+                      <div style={{ display: 'flex', flexDirection: 'row' as const, alignItems: 'flex-start', gap: 10 } as any}>
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" style={{ flexShrink: 0, marginTop: 2 } as any}>
+                          <path d="M3 21C3 21 5 19 5 16V5C5 3.9 5.9 3 7 3H17C18.1 3 19 3.9 19 5V13C19 14.1 18.1 15 17 15H8L3 21Z" stroke={colors.primary[500]} strokeWidth="1.8" strokeLinejoin="round"/>
+                        </svg>
+                        <span style={{ fontFamily: font, fontSize: 15, color: colors.gray[700], lineHeight: '22px', fontStyle: 'italic' } as any}>
+                          "{(move as any).clientReview.text}"
+                        </span>
+                      </div>
+                      <span style={{ fontFamily: font, fontSize: 13, color: colors.gray[400], display: 'block', marginTop: 8, textAlign: 'right' as const } as any}>
+                        — {move.client}, {(move as any).clientReview.date}
+                      </span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
 
             {/* ── CLIENT NOTES ── */}
             {move.notes ? (
