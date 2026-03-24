@@ -1084,20 +1084,13 @@ const MoverDetailScreen: React.FC<{
         <div style={{ display: 'flex', gap: 10, marginBottom: 12, animation: 'fadeInUp 0.4s cubic-bezier(0.22,1,0.36,1) 0.08s both' } as any}>
           {[
             { label: 'Revenue', value: `$${detail.totalRevenue.toLocaleString()}`, color: colors.primary[500] },
-            { label: 'Moves', value: String(detail.completedMoves), color: colors.gray[900] },
+            { label: 'Avg Move Time', value: detail.avgTime, color: colors.primary[500] },
           ].map(s => (
             <div key={s.label} style={{ flex: 1, backgroundColor: '#FFFFFF', borderRadius: 16, padding: '16px 14px' } as any}>
               <span style={{ fontFamily: F, fontSize: 22, fontWeight: 800, color: s.color, display: 'block', letterSpacing: -0.5 } as any}>{s.value}</span>
               <span style={{ fontFamily: F, fontSize: 12, fontWeight: 500, color: colors.gray[400], display: 'block', marginTop: 4 } as any}>{s.label}</span>
             </div>
           ))}
-        </div>
-
-        <div style={{ display: 'flex', gap: 10, marginBottom: 12, animation: 'fadeInUp 0.4s cubic-bezier(0.22,1,0.36,1) 0.14s both' } as any}>
-          <div style={{ flex: 1, backgroundColor: '#FFFFFF', borderRadius: 16, padding: '16px 14px' } as any}>
-            <span style={{ fontFamily: F, fontSize: 20, fontWeight: 800, color: colors.primary[500], display: 'block' } as any}>{detail.avgTime}</span>
-            <span style={{ fontFamily: F, fontSize: 11, fontWeight: 500, color: colors.gray[400], display: 'block', marginTop: 4 } as any}>Avg Move Time</span>
-          </div>
         </div>
 
         {/* Recent jobs */}
