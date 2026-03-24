@@ -403,37 +403,7 @@ export const MoveDetailScreen: React.FC<MoveDetailScreenProps> = ({
               </div>
             </div>
 
-            {/* ── MOVER / CREW (completed moves, CEO role) ── */}
-            {isCompleted && (move as any).moverInfo && (
-              <div style={{ backgroundColor: '#FFFFFF', borderRadius: 16, overflow: 'hidden', marginTop: 10 } as any}>
-                <SectionHeader label="Mover & Crew" />
-                <div style={{
-                  display: 'flex', flexDirection: 'row' as const, alignItems: 'center',
-                  paddingTop: 14, paddingBottom: 14, paddingLeft: 16, paddingRight: 16, gap: 14,
-                } as any}>
-                  <div style={{
-                    width: 44, height: 44, minWidth: 44, borderRadius: '50%',
-                    backgroundColor: '#EFF2F7', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
-                  } as any}>
-                    <span style={{ fontFamily: font, fontSize: 16, fontWeight: 700, color: colors.primary[500] } as any}>
-                      {(move as any).moverInfo.name.split(' ').map((n: string) => n[0]).join('')}
-                    </span>
-                  </div>
-                  <div style={{ flex: 1, minWidth: 0 } as any}>
-                    <span style={{ fontFamily: font, fontSize: 16, fontWeight: 600, color: colors.gray[900], display: 'block' } as any}>{(move as any).moverInfo.name}</span>
-                    <span style={{ fontFamily: font, fontSize: 14, color: colors.gray[400], marginTop: 2, display: 'block' } as any}>Crew of {(move as any).moverInfo.crewSize}</span>
-                  </div>
-                  <div style={{
-                    backgroundColor: colors.primary[50], borderRadius: 8,
-                    paddingTop: 4, paddingBottom: 4, paddingLeft: 10, paddingRight: 10, flexShrink: 0,
-                  } as any}>
-                    <span style={{ fontFamily: font, fontSize: 13, fontWeight: 600, color: colors.primary[500] } as any}>
-                      {(move as any).moverInfo.crewSize > 2 ? 'Premium' : 'Standard'} crew
-                    </span>
-                  </div>
-                </div>
-              </div>
-            )}
+
 
             {/* ── PLAN & PRICING (hidden for mover) ── */}
             {role !== 'mover' && <div style={{ backgroundColor: '#FFFFFF', borderRadius: 16, overflow: 'hidden', marginTop: 10 } as any}>
