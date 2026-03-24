@@ -949,35 +949,71 @@ const MoverDetailScreen: React.FC<{
    Job Detail — reuses actual MoveDetailScreen
    ═══════════════════════════════════════════ */
 
+/** Generate realistic room inventory based on room count */
+const generateRooms = (roomCount: number): import('../move/MoveDetailScreen').RoomInventory[] => {
+  const templates: import('../move/MoveDetailScreen').RoomInventory[] = [
+    { name: 'Living Room', icon: 'living', items: [
+      { name: 'Sofa', qty: 1, tag: 'Large' }, { name: 'Coffee Table', qty: 1 },
+      { name: 'TV Stand', qty: 1 }, { name: 'Bookshelf', qty: 1, tag: 'Large' },
+      { name: 'Boxes', qty: 8 }, { name: 'Lamp', qty: 2 },
+    ]},
+    { name: 'Master Bedroom', icon: 'bedroom', items: [
+      { name: 'Queen Bed Frame', qty: 1, tag: 'Large' }, { name: 'Mattress', qty: 1, tag: 'Large' },
+      { name: 'Dresser', qty: 1 }, { name: 'Nightstand', qty: 2 },
+      { name: 'Boxes', qty: 6 }, { name: 'Mirror', qty: 1, tag: 'Fragile' },
+    ]},
+    { name: 'Kitchen', icon: 'kitchen', items: [
+      { name: 'Boxes (dishes)', qty: 5, tag: 'Fragile' }, { name: 'Boxes (cookware)', qty: 3 },
+      { name: 'Microwave', qty: 1 }, { name: 'Small Appliances', qty: 4 },
+    ]},
+    { name: 'Bedroom 2', icon: 'bedroom', items: [
+      { name: 'Twin Bed', qty: 1, tag: 'Large' }, { name: 'Desk', qty: 1 },
+      { name: 'Chair', qty: 1 }, { name: 'Boxes', qty: 4 },
+    ]},
+    { name: 'Office', icon: 'office', items: [
+      { name: 'Desk', qty: 1, tag: 'Large' }, { name: 'Office Chair', qty: 1 },
+      { name: 'Monitor', qty: 2, tag: 'Fragile' }, { name: 'Boxes', qty: 5 },
+    ]},
+  ];
+  return templates.slice(0, Math.min(roomCount, templates.length));
+};
+
 /** Convert CEO dashboard job data → MoveDetailData for the real screen */
 const jobToMoveDetail = (job: JobData, moverName: string): MoveDetailData => {
   const fromTo = job.route.split(' → ');
+  const boxCount = parseInt(job.items.match(/(\d+)\s*box/)?.[1] || '0');
+  const furnitureCount = parseInt(job.items.match(/(\d+)\s*furniture/)?.[1] || '0');
+  const rooms = generateRooms(job.rooms);
+  const totalItems = rooms.reduce((sum, r) => sum + r.items.reduce((s, it) => s + it.qty, 0), 0);
+
   return {
     id: `job-${job.date}-${job.client}`,
     client: job.client,
     from: fromTo[0] || '',
     to: fromTo[1] || '',
-    date: `${job.date}, 2026`,
+    date: job.date,
     time: '10:00 AM',
     price: parseInt(job.amount.replace(/[$,]/g, '')) || 0,
     step: job.status === 'Completed' ? 'completed' : 'accepted',
     roomsCount: job.rooms,
     clientPhone: job.clientPhone,
-    clientEmail: '',
-    fromApt: '-',
-    fromFloor: '-',
-    fromElevator: true,
-    toApt: '-',
-    toFloor: '-',
-    toElevator: true,
+    clientEmail: `${job.client.toLowerCase().replace(/\s+/g, '.')}@email.com`,
+    fromApt: `${Math.floor(Math.random() * 20) + 1}${String.fromCharCode(65 + Math.floor(Math.random() * 4))}`,
+    fromFloor: String(Math.floor(Math.random() * 8) + 1),
+    fromElevator: Math.random() > 0.3,
+    toApt: `${Math.floor(Math.random() * 30) + 1}${String.fromCharCode(65 + Math.floor(Math.random() * 4))}`,
+    toFloor: String(Math.floor(Math.random() * 15) + 1),
+    toElevator: Math.random() > 0.2,
     distance: job.distance,
-    estimatedTime: job.duration,
-    totalVolume: '-',
-    totalItems: parseInt(job.items.match(/(\d+)\s*boxes/)?.[1] || '0') + parseInt(job.items.match(/(\d+)\s*furniture/)?.[1] || '0'),
-    rooms: [],
-    specialItems: [],
+    estimatedTime: `~${Math.round(parseFloat(job.distance) * 2.5)} min`,
+    totalVolume: `${Math.round(job.rooms * 120 + boxCount * 3)} cu ft`,
+    totalItems,
+    rooms,
+    specialItems: furnitureCount > 5
+      ? [{ name: 'Piano', quantity: 1, note: 'Upright, needs padding' }]
+      : [],
     notes: job.notes,
-    planName: `${job.crew}-mover team · ${moverName}`,
+    planName: `${job.crew}-Mover Team`,
     depositPaid: Math.round((parseInt(job.amount.replace(/[$,]/g, '')) || 0) * 0.2),
   };
 };
