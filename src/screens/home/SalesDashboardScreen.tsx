@@ -7,10 +7,9 @@
  * 2. Key metrics cards (deals closed, conversion rate, proposals sent, avg deal size)
  * 3. Weekly/Monthly sales chart (bar chart)
  * 4. Recent deals list with status badges
- * 5. Monthly goal progress tracker
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   View,
   StyleSheet,
@@ -90,6 +89,14 @@ const ChevronRightIcon = ({ color }: { color: string }) => (
    ═══════════════════════════════════════════ */
 
 const ANIMATION_CSS = `
+@keyframes slideInRight {
+  from { opacity: 0; transform: translateX(40px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+@keyframes slideInLeft {
+  from { opacity: 0; transform: translateX(-40px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
 @keyframes fadeInUp {
   from { opacity: 0; transform: translateY(18px); }
   to   { opacity: 1; transform: translateY(0); }
@@ -142,26 +149,55 @@ const ANIMATION_CSS = `
 }
 `;
 
+let cssInjected = false;
 const injectAnimationCSS = () => {
-  if (Platform.OS === 'web' && typeof document !== 'undefined') {
-    if (!document.getElementById('sales-anim-id')) {
-      const st = document.createElement('style');
-      st.id = 'sales-anim-id';
-      st.textContent = ANIMATION_CSS;
-      document.head.appendChild(st);
-    }
-  }
+  if (cssInjected || typeof document === 'undefined') return;
+  const style = document.createElement('style');
+  style.textContent = ANIMATION_CSS;
+  document.head.appendChild(style);
+  cssInjected = true;
 };
 
 /* ═══════════════════════════════════════════
    AnimatedNumber & Animation helpers
    ═══════════════════════════════════════════ */
 
-const AnimatedNumber = ({ value, style }: { value: string; style?: any }) => (
-  <span style={{ ...style, animation: 'countPulse 0.6s ease-out' } as any}>
-    {value}
-  </span>
-);
+const AnimatedNumber: React.FC<{ value: string; style: React.CSSProperties }> = ({ value, style }) => {
+  const [display, setDisplay] = useState(value);
+  const prevRef = useRef(value);
+
+  useEffect(() => {
+    if (prevRef.current === value) return;
+    prevRef.current = value;
+    const numMatch = value.match(/([$%]?)([0-9,.]+)(.*)/);
+    if (!numMatch) { setDisplay(value); return; }
+    const prefix = numMatch[1] || '';
+    const target = parseFloat(numMatch[2].replace(/,/g, ''));
+    const suffix = numMatch[3] || '';
+    const isDecimal = numMatch[2].includes('.');
+    const hasComma = numMatch[2].includes(',');
+    const startMatch = display.match(/([$%]?)([0-9,.]+)(.*)/);
+    const start = startMatch ? parseFloat(startMatch[2].replace(/,/g, '')) : 0;
+    let frame = 0;
+    const totalFrames = 20;
+    const step = () => {
+      frame++;
+      const t = frame / totalFrames;
+      const eased = 1 - Math.pow(1 - t, 3);
+      const current = start + (target - start) * eased;
+      const formatted = isDecimal ? current.toFixed(numMatch[2].split('.')[1]?.length || 1) :
+                        hasComma ? Math.round(current).toLocaleString() :
+                        String(Math.round(current));
+      setDisplay(`${prefix}${formatted}${suffix}`);
+      if (frame < totalFrames) requestAnimationFrame(step);
+    };
+    requestAnimationFrame(step);
+  }, [value]);
+
+  useEffect(() => { setDisplay(value); }, []);
+
+  return <span style={style as any}>{display}</span>;
+};
 
 const StaggerItem = ({ children, index = 0 }: { children: React.ReactNode; index?: number }) => (
   <div style={{ animation: `fadeInUp 0.4s cubic-bezier(0.22,1,0.36,1) ${index * 0.06}s both` } as any}>
@@ -689,34 +725,6 @@ export const SalesDashboardScreen: React.FC<SalesDashboardScreenProps> = ({
                 </div>
                 </StaggerItem>
               ))}
-            </div>
-
-            {/* ── Monthly Goal Progress ── */}
-            <div style={{ backgroundColor: '#FFFFFF', borderRadius: 16, padding: '20px 16px', marginBottom: 12, animation: 'fadeInUp 0.4s cubic-bezier(0.22,1,0.36,1) 0.32s both' } as any}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 } as any}>
-                <span style={{ fontFamily: F, fontSize: 15, fontWeight: 700, color: colors.gray[900] } as any}>
-                  Monthly Goal
-                </span>
-                <span style={{ fontFamily: F, fontSize: 13, fontWeight: 600, color: colors.primary[500] } as any}>
-                  71%
-                </span>
-              </div>
-              <div style={{ width: '100%', height: 8, backgroundColor: '#EFF2F7', borderRadius: 4, overflow: 'hidden', marginBottom: 10 } as any}>
-                <div style={{
-                  height: '100%', width: '71%',
-                  backgroundColor: colors.primary[500],
-                  borderRadius: 4,
-                  transition: 'width 0.5s ease',
-                } as any} />
-              </div>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' } as any}>
-                <span style={{ fontFamily: F, fontSize: 12, color: colors.gray[500] } as any}>
-                  $42,800 earned
-                </span>
-                <span style={{ fontFamily: F, fontSize: 12, fontWeight: 600, color: colors.gray[700] } as any}>
-                  $60,000 target
-                </span>
-              </div>
             </div>
 
           </div>
