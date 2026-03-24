@@ -36,6 +36,7 @@ export interface MoveRecord {
 export interface MoveHistoryScreenProps {
   moves: MoveRecord[];
   onBack: () => void;
+  role?: 'mover' | 'sales' | 'ceo';
 }
 
 type ViewType = 'list' | 'detail' | 'document';
@@ -49,6 +50,159 @@ const DOCUMENTS: DocumentItem[] = [
   { name: 'Move Confirmation', type: 'confirmation' },
   { name: 'Invoice', type: 'invoice' },
   { name: 'Insurance Certificate', type: 'insurance' },
+];
+
+const CEO_DEMO_MOVES: MoveRecord[] = [
+  {
+    id: 'move-2401',
+    status: 'completed',
+    fromAddress: '1200 Sunset Blvd, Los Angeles, CA 90026',
+    toAddress: '8500 Melrose Ave, West Hollywood, CA 90069',
+    date: 'Mar 20, 2026',
+    moverName: 'Dmitriy K.',
+    moverRating: 5,
+    crewSize: 3,
+    totalPrice: 1250,
+    duration: '4h 30m',
+    roomsCount: 3,
+    itemsCount: 45,
+    volume: '1,200 cu ft',
+  },
+  {
+    id: 'move-2402',
+    status: 'completed',
+    fromAddress: '2100 Century Park E, Century City, CA 90067',
+    toAddress: '3600 Wilshire Blvd, Los Angeles, CA 90010',
+    date: 'Mar 19, 2026',
+    moverName: 'Alex M.',
+    moverRating: 4,
+    crewSize: 2,
+    totalPrice: 850,
+    duration: '3h 15m',
+    roomsCount: 2,
+    itemsCount: 32,
+    volume: '850 cu ft',
+  },
+  {
+    id: 'move-2403',
+    status: 'completed',
+    fromAddress: '450 N Roxbury Dr, Beverly Hills, CA 90210',
+    toAddress: '9001 Wilshire Blvd, Beverly Hills, CA 90210',
+    date: 'Mar 18, 2026',
+    moverName: 'James L.',
+    moverRating: 5,
+    crewSize: 4,
+    totalPrice: 1850,
+    duration: '5h 45m',
+    roomsCount: 5,
+    itemsCount: 78,
+    volume: '1,850 cu ft',
+  },
+  {
+    id: 'move-2404',
+    status: 'cancelled',
+    fromAddress: '1875 Century Park E, Los Angeles, CA 90067',
+    toAddress: '11000 Santa Monica Blvd, Los Angeles, CA 90025',
+    date: 'Mar 17, 2026',
+    moverName: 'Carlos R.',
+    moverRating: 3,
+    crewSize: 2,
+    totalPrice: 650,
+    duration: '2h 30m',
+    roomsCount: 1,
+    itemsCount: 20,
+    volume: '650 cu ft',
+  },
+  {
+    id: 'move-2405',
+    status: 'completed',
+    fromAddress: '6363 Wilshire Blvd, Los Angeles, CA 90048',
+    toAddress: '5900 Wilshire Blvd, Los Angeles, CA 90036',
+    date: 'Mar 16, 2026',
+    moverName: 'Marcus T.',
+    moverRating: 4,
+    crewSize: 3,
+    totalPrice: 1100,
+    duration: '3h 45m',
+    roomsCount: 3,
+    itemsCount: 50,
+    volume: '1,100 cu ft',
+  },
+  {
+    id: 'move-2406',
+    status: 'completed',
+    fromAddress: '4000 Highland Ave, Los Angeles, CA 90028',
+    toAddress: '7100 Hollywood Blvd, Los Angeles, CA 90028',
+    date: 'Mar 15, 2026',
+    moverName: 'Dmitriy K.',
+    moverRating: 5,
+    crewSize: 2,
+    totalPrice: 950,
+    duration: '3h 20m',
+    roomsCount: 2,
+    itemsCount: 38,
+    volume: '950 cu ft',
+  },
+  {
+    id: 'move-2407',
+    status: 'completed',
+    fromAddress: '1050 S Olive St, Los Angeles, CA 90015',
+    toAddress: '2200 Park Ave, Los Angeles, CA 90026',
+    date: 'Mar 14, 2026',
+    moverName: 'James L.',
+    moverRating: 5,
+    crewSize: 3,
+    totalPrice: 1400,
+    duration: '4h 10m',
+    roomsCount: 3,
+    itemsCount: 55,
+    volume: '1,350 cu ft',
+  },
+  {
+    id: 'move-2408',
+    status: 'cancelled',
+    fromAddress: '8060 Melrose Ave, Los Angeles, CA 90046',
+    toAddress: '8701 Santa Monica Blvd, West Hollywood, CA 90069',
+    date: 'Mar 13, 2026',
+    moverName: 'Alex M.',
+    moverRating: 4,
+    crewSize: 2,
+    totalPrice: 780,
+    duration: '2h 45m',
+    roomsCount: 2,
+    itemsCount: 28,
+    volume: '780 cu ft',
+  },
+  {
+    id: 'move-2409',
+    status: 'completed',
+    fromAddress: '5240 Lankershim Blvd, North Hollywood, CA 91601',
+    toAddress: '4520 Cahuenga Blvd, Los Angeles, CA 90027',
+    date: 'Mar 12, 2026',
+    moverName: 'Marcus T.',
+    moverRating: 4,
+    crewSize: 3,
+    totalPrice: 1180,
+    duration: '4h 00m',
+    roomsCount: 3,
+    itemsCount: 48,
+    volume: '1,150 cu ft',
+  },
+  {
+    id: 'move-2410',
+    status: 'completed',
+    fromAddress: '1500 Cahuena Blvd, Los Angeles, CA 90028',
+    toAddress: '6255 Wilshire Blvd, Los Angeles, CA 90048',
+    date: 'Mar 11, 2026',
+    moverName: 'Carlos R.',
+    moverRating: 3,
+    crewSize: 2,
+    totalPrice: 920,
+    duration: '3h 30m',
+    roomsCount: 2,
+    itemsCount: 40,
+    volume: '920 cu ft',
+  },
 ];
 
 const F = 'Inter, system-ui, sans-serif';
@@ -161,8 +315,81 @@ const ListView: React.FC<{
   moves: MoveRecord[];
   onBack: () => void;
   onSelectMove: (m: MoveRecord) => void;
-}> = ({ moves, onBack, onSelectMove }) => {
+  role?: 'mover' | 'sales' | 'ceo';
+}> = ({ moves, onBack, onSelectMove, role = 'mover' }) => {
   if (Platform.OS !== 'web') return null;
+
+  const [statusFilter, setStatusFilter] = useState<'all' | 'completed' | 'cancelled'>('all');
+  const [moverFilter, setMoverFilter] = useState<string>('all');
+
+  const displayMoves = role === 'ceo' && moves.length === 0 ? CEO_DEMO_MOVES : moves;
+
+  // Get unique mover names for CEO filter
+  const moverNames = Array.from(new Set(displayMoves.map(m => m.moverName))).sort();
+
+  // Filter moves based on selected filters (CEO only)
+  let filteredMoves = displayMoves;
+  if (role === 'ceo') {
+    if (statusFilter !== 'all') {
+      filteredMoves = filteredMoves.filter(m => m.status === statusFilter);
+    }
+    if (moverFilter !== 'all') {
+      filteredMoves = filteredMoves.filter(m => m.moverName === moverFilter);
+    }
+  }
+
+  // Calculate stats for CEO
+  const totalMoves = filteredMoves.length;
+  const totalRevenue = filteredMoves.reduce((sum, m) => sum + m.totalPrice, 0);
+  const avgPrice = totalMoves > 0 ? Math.round(totalRevenue / totalMoves) : 0;
+
+  const ChipButton = ({ label, value, isActive, onPress }: { label: string; value: string | number; isActive: boolean; onPress: () => void }) => (
+    <Pressable onPress={onPress}>
+      <div style={{
+        paddingLeft: 14,
+        paddingRight: 14,
+        paddingTop: 6,
+        paddingBottom: 6,
+        borderRadius: 10,
+        backgroundColor: isActive ? colors.primary[500] : colors.gray[50],
+        cursor: 'pointer',
+      } as any}>
+        <span style={{
+          fontFamily: F,
+          fontSize: 13,
+          fontWeight: 600,
+          color: isActive ? 'white' : colors.gray[500],
+          letterSpacing: -0.26,
+        } as any}>
+          {label}
+        </span>
+      </div>
+    </Pressable>
+  );
+
+  const StatItem = ({ number, label }: { number: string | number; label: string }) => (
+    <div style={{ display: 'flex', flexDirection: 'column' as const, alignItems: 'flex-start' } as any}>
+      <span style={{
+        fontFamily: F,
+        fontSize: 20,
+        fontWeight: 700,
+        color: colors.gray[900],
+        letterSpacing: -0.4,
+      } as any}>
+        {number}
+      </span>
+      <span style={{
+        fontFamily: F,
+        fontSize: 12,
+        fontWeight: 500,
+        color: colors.gray[400],
+        letterSpacing: -0.24,
+        marginTop: 4,
+      } as any}>
+        {label}
+      </span>
+    </div>
+  );
 
   return (
     <SafeAreaView style={s.safe}>
@@ -170,7 +397,50 @@ const ListView: React.FC<{
       <Navbar title="Move History" onBack={onBack} />
 
       <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false} contentContainerStyle={{ padding: 16, paddingBottom: 40 }}>
-        {moves.length === 0 ? (
+        {/* CEO Stats Summary Card */}
+        {role === 'ceo' && filteredMoves.length > 0 && (
+          <div style={{
+            backgroundColor: '#FFFFFF',
+            borderRadius: 16,
+            padding: 16,
+            display: 'flex',
+            flexDirection: 'row' as const,
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            marginBottom: 16,
+          } as any}>
+            <StatItem number={totalMoves} label="Total Moves" />
+            <StatItem number={`$${totalRevenue.toLocaleString()}`} label="Total Revenue" />
+            <StatItem number={`$${avgPrice.toLocaleString()}`} label="Avg Price" />
+          </div>
+        )}
+
+        {/* CEO Status Filter Chips */}
+        {role === 'ceo' && (
+          <div style={{ display: 'flex', flexDirection: 'row' as const, gap: 8, marginBottom: 12 } as any}>
+            <ChipButton label="All" value="all" isActive={statusFilter === 'all'} onPress={() => setStatusFilter('all')} />
+            <ChipButton label="Completed" value="completed" isActive={statusFilter === 'completed'} onPress={() => setStatusFilter('completed')} />
+            <ChipButton label="Cancelled" value="cancelled" isActive={statusFilter === 'cancelled'} onPress={() => setStatusFilter('cancelled')} />
+          </div>
+        )}
+
+        {/* CEO Mover Filter Chips */}
+        {role === 'ceo' && (
+          <div style={{ display: 'flex', flexDirection: 'row' as const, gap: 8, marginBottom: 16, flexWrap: 'wrap' as const } as any}>
+            <ChipButton label="All Movers" value="all" isActive={moverFilter === 'all'} onPress={() => setMoverFilter('all')} />
+            {moverNames.map(name => (
+              <ChipButton
+                key={name}
+                label={name}
+                value={name}
+                isActive={moverFilter === name}
+                onPress={() => setMoverFilter(name)}
+              />
+            ))}
+          </div>
+        )}
+
+        {filteredMoves.length === 0 ? (
           <View style={{ alignItems: 'center', paddingTop: 60 }}>
             <div style={{
               width: 64, height: 64, borderRadius: 32,
@@ -184,12 +454,12 @@ const ListView: React.FC<{
               No moves yet
             </span>
             <span style={{ fontFamily: F, fontSize: 12, fontWeight: 500, letterSpacing: -0.24, color: colors.gray[400], textAlign: 'center', marginTop: 6, lineHeight: '16px' } as any}>
-              Your completed moves will appear here
+              {role === 'ceo' ? 'No moves match your filters' : 'Your completed moves will appear here'}
             </span>
           </View>
         ) : (
           <View style={{ gap: 12 } as any}>
-            {moves.map((move) => {
+            {filteredMoves.map((move) => {
               const cfg = STATUS_CONFIG[move.status];
               const num = move.id.replace(/\D/g, '') || '0';
               return (
@@ -216,7 +486,16 @@ const ListView: React.FC<{
                   {/* Info rows */}
                   <InfoRow icon={<IconTruck />} text={`${shortCity(move.fromAddress)} → ${shortCity(move.toAddress)}`} />
                   <InfoRow icon={<IconCalendar />} text={move.date} />
-                  <InfoRow icon={<IconUser />} text={move.moverName} />
+                  {role === 'ceo' ? (
+                    <div style={{ display: 'flex', flexDirection: 'row' as const, alignItems: 'center', gap: 10, marginTop: 10 } as any}>
+                      <IconUser />
+                      <span style={{ fontFamily: F, fontSize: 13, fontWeight: 400, color: colors.gray[500], letterSpacing: -0.26 } as any}>
+                        Mover: {move.moverName}
+                      </span>
+                    </div>
+                  ) : (
+                    <InfoRow icon={<IconUser />} text={move.moverName} />
+                  )}
 
                   {/* Separator + bottom */}
                   <div style={{
@@ -225,7 +504,7 @@ const ListView: React.FC<{
                   } as any}>
                     <div>
                       <span style={{ fontFamily: F, fontSize: 12, fontWeight: 500, letterSpacing: -0.24, color: colors.gray[400], display: 'block' } as any}>
-                        Earned
+                        {role === 'ceo' ? 'Revenue' : 'Earned'}
                       </span>
                       <span style={{ fontFamily: F, fontSize: 20, fontWeight: 700, color: colors.gray[900], letterSpacing: -0.4 } as any}>
                         ${move.totalPrice.toLocaleString()}
@@ -411,13 +690,13 @@ const DocumentView: React.FC<{ document: DocumentItem; onBack: () => void }> = (
    MAIN COMPONENT
    ═══════════════════════════════════════════ */
 
-export const MoveHistoryScreen: React.FC<MoveHistoryScreenProps> = ({ moves, onBack }) => {
+export const MoveHistoryScreen: React.FC<MoveHistoryScreenProps> = ({ moves, onBack, role = 'mover' }) => {
   const [view, setView] = useState<ViewType>('list');
   const [selected, setSelected] = useState<MoveRecord | null>(null);
   const [doc, setDoc] = useState<DocumentItem | null>(null);
 
   if (view === 'list') {
-    return <ListView moves={moves} onBack={onBack} onSelectMove={(m) => { setSelected(m); setView('detail'); }} />;
+    return <ListView moves={moves} onBack={onBack} onSelectMove={(m) => { setSelected(m); setView('detail'); }} role={role} />;
   }
 
   if (view === 'detail' && selected) {

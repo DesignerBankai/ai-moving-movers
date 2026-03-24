@@ -22,6 +22,7 @@ export interface PaymentCard {
 interface PaymentMethodsScreenProps {
   initialCards?: PaymentCard[];
   onBack: () => void;
+  role?: 'mover' | 'sales' | 'ceo';
 }
 
 type ViewType = 'list' | 'addCard' | 'cardDetail' | 'deleteConfirm' | 'success';
@@ -48,6 +49,7 @@ const DEMO_CARDS: PaymentCard[] = [
 export const PaymentMethodsScreen: React.FC<PaymentMethodsScreenProps> = ({
   initialCards = DEMO_CARDS,
   onBack,
+  role,
 }) => {
   const [view, setView] = useState<ViewType>('list');
   const [cards, setCards] = useState<PaymentCard[]>(initialCards);
@@ -225,6 +227,15 @@ export const PaymentMethodsScreen: React.FC<PaymentMethodsScreenProps> = ({
     );
   };
 
+  const renderBankBuildingSVG = () => {
+    if (Platform.OS !== 'web') return null;
+    return (
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+        <path d="M3 21H21M4 18H20M6 18V14M10 18V14M14 18V14M18 18V14M3 10L12 3L21 10H3Z" stroke={colors.primary[500]} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+      </svg>
+    );
+  };
+
   // View: List
   const renderListView = () => {
     const hasCards = cards.length > 0;
@@ -263,6 +274,111 @@ export const PaymentMethodsScreen: React.FC<PaymentMethodsScreenProps> = ({
         <ScrollView style={{ flex: 1 }} contentContainerStyle={{ paddingBottom: 24 }}>
           {hasCards ? (
             <View style={{ paddingHorizontal: 16, paddingVertical: 16, gap: 12 }}>
+              {/* Company Bank Account Section - CEO only */}
+              {role === 'ceo' && (
+                <View style={{ backgroundColor: '#FFFFFF', borderRadius: 16, overflow: 'hidden', marginBottom: 12 }}>
+                  <View style={{ paddingHorizontal: 16, paddingTop: 16, paddingBottom: 8 }}>
+                    {Platform.OS === 'web' && (
+                      <span style={{
+                        fontSize: 12,
+                        fontWeight: 600,
+                        color: colors.gray[400],
+                        textTransform: 'uppercase',
+                        letterSpacing: 0.8,
+                        fontFamily: 'Inter, system-ui, sans-serif',
+                      } as any}>
+                        COMPANY BANK ACCOUNT
+                      </span>
+                    )}
+                  </View>
+                  <View style={{
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    gap: 14,
+                    paddingHorizontal: 16,
+                    paddingVertical: 16,
+                    borderBottomWidth: 1,
+                    borderBottomColor: colors.gray[100],
+                  }}>
+                    {renderBankBuildingSVG()}
+                    <View style={{ flex: 1 }}>
+                      {Platform.OS === 'web' && (
+                        <>
+                          <span style={{
+                            fontSize: 15,
+                            fontWeight: 600,
+                            color: colors.gray[900],
+                            fontFamily: 'Inter, system-ui, sans-serif',
+                          } as any}>
+                            Chase Business Checking
+                          </span>
+                          <span style={{
+                            fontSize: 13,
+                            color: colors.gray[500],
+                            fontFamily: 'Inter, system-ui, sans-serif',
+                          } as any}>
+                            ****6789
+                          </span>
+                        </>
+                      )}
+                    </View>
+                    <View style={{
+                      backgroundColor: colors.success[50],
+                      paddingHorizontal: 8,
+                      paddingVertical: 3,
+                      borderRadius: 6,
+                    }}>
+                      {Platform.OS === 'web' && (
+                        <span style={{
+                          fontSize: 11,
+                          fontWeight: 600,
+                          color: colors.success[600],
+                          fontFamily: 'Inter, system-ui, sans-serif',
+                        } as any}>
+                          Connected
+                        </span>
+                      )}
+                    </View>
+                  </View>
+                  <Pressable style={{
+                    paddingVertical: 14,
+                    paddingHorizontal: 16,
+                    alignItems: 'center',
+                  }}>
+                    {Platform.OS === 'web' && (
+                      <span style={{
+                        fontSize: 15,
+                        fontWeight: 600,
+                        color: colors.primary[500],
+                        textAlign: 'center',
+                        cursor: 'pointer',
+                        fontFamily: 'Inter, system-ui, sans-serif',
+                      } as any}>
+                        Edit
+                      </span>
+                    )}
+                  </Pressable>
+                </View>
+              )}
+
+              {/* Personal Cards Header - CEO only */}
+              {role === 'ceo' && (
+                <View style={{ paddingHorizontal: 0, paddingBottom: 4 }}>
+                  {Platform.OS === 'web' && (
+                    <span style={{
+                      fontSize: 12,
+                      fontWeight: 600,
+                      color: colors.gray[400],
+                      textTransform: 'uppercase',
+                      letterSpacing: 0.8,
+                      fontFamily: 'Inter, system-ui, sans-serif',
+                    } as any}>
+                      PERSONAL CARDS
+                    </span>
+                  )}
+                </View>
+              )}
+
               {cards.map(card => (
                 <Pressable
                   key={card.id}

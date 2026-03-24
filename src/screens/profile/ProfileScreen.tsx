@@ -35,7 +35,9 @@ export type ProfileMenuItem =
   | 'notifications'
   | 'helpSupport'
   | 'legal'
-  | 'signOut';
+  | 'signOut'
+  | 'companyInfo'
+  | 'reportsExport';
 
 interface ProfileScreenProps {
   userName: string;
@@ -102,6 +104,19 @@ const ContractIcon = () => (
     <path d="M14 2H6C4.9 2 4 2.9 4 4V20C4 21.1 4.9 22 6 22H18C19.1 22 20 21.1 20 20V8L14 2Z" stroke={ic} strokeWidth="1.5" strokeLinejoin="round" />
     <path d="M14 2V8H20" stroke={ic} strokeWidth="1.5" strokeLinejoin="round" />
     <path d="M8 15C8 15 9.5 17 12 17C14.5 17 16 15 16 15" stroke={ic} strokeWidth="1.5" strokeLinecap="round" />
+  </svg>
+);
+
+const BuildingIcon = () => (
+  <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+    <path d="M3 21H21M4 18H20M6 18V14M10 18V14M14 18V14M18 18V14M3 10L12 3L21 10H3Z" stroke={ic} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+  </svg>
+);
+
+const DownloadIcon = () => (
+  <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+    <path d="M12 3V15M12 15L7 10M12 15L17 10" stroke={ic} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+    <path d="M3 17V19C3 20.1 3.9 21 5 21H19C20.1 21 21 20.1 21 19V17" stroke={ic} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
   </svg>
 );
 
@@ -201,14 +216,19 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({
 
               {/* Main menu */}
               <View style={s.menuCard}>
-                {role !== 'mover' && (
+                {role === 'ceo' ? (
+                  <MenuRow icon={<BuildingIcon />} label="Company Info" onPress={() => onMenuPress('companyInfo')} />
+                ) : role !== 'mover' ? (
                   <MenuRow icon={<PersonIcon />} label="Personal Info" onPress={() => onMenuPress('personalInfo')} />
-                )}
+                ) : null}
                 {role !== 'mover' && (
                   <MenuRow icon={<CreditCardIcon />} label="Payout Methods" onPress={() => onMenuPress('paymentMethods')} />
                 )}
                 {role !== 'mover' && (
                   <MenuRow icon={<ClockIcon />} label="Move History" onPress={() => onMenuPress('moveHistory')} />
+                )}
+                {role === 'ceo' && (
+                  <MenuRow icon={<DownloadIcon />} label="Reports & Export" onPress={() => onMenuPress('reportsExport')} />
                 )}
                 <MenuRow icon={<ContractIcon />} label="My Contracts" onPress={() => onMenuPress('contracts')} />
                 <MenuRow icon={<BellIcon />} label="Notification Settings" onPress={() => onMenuPress('notifications')} />
@@ -232,14 +252,19 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({
           ) : (
             <>
               <View style={s.menuCard}>
-                {role !== 'mover' && (
+                {role === 'ceo' ? (
+                  <MenuRow icon={<BuildingIcon />} label="Company Info" onPress={() => onMenuPress('companyInfo')} />
+                ) : role !== 'mover' ? (
                   <MenuRow icon={<PersonIcon />} label="Personal Info" onPress={() => onMenuPress('personalInfo')} />
-                )}
+                ) : null}
                 {role !== 'mover' && (
                   <MenuRow icon={<CreditCardIcon />} label="Payout Methods" onPress={() => onMenuPress('paymentMethods')} />
                 )}
                 {role !== 'mover' && (
                   <MenuRow icon={<ClockIcon />} label="Move History" onPress={() => onMenuPress('moveHistory')} />
+                )}
+                {role === 'ceo' && (
+                  <MenuRow icon={<DownloadIcon />} label="Reports & Export" onPress={() => onMenuPress('reportsExport')} />
                 )}
                 <MenuRow icon={<ContractIcon />} label="My Contracts" onPress={() => onMenuPress('contracts')} />
                 <MenuRow icon={<BellIcon />} label="Notification Settings" onPress={() => onMenuPress('notifications')} />
