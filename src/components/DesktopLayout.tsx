@@ -29,55 +29,6 @@ const APP_URL =
 
 const QR_URL = `https://api.qrserver.com/v1/create-qr-code/?data=${encodeURIComponent(APP_URL)}&size=140x140&color=1D2939&bgcolor=FFFFFF&margin=8&format=svg`;
 
-/** Apple App Store badge */
-const AppStoreBadge = () => (
-  <svg
-    width="156"
-    height="52"
-    viewBox="0 0 156 52"
-    fill="none"
-    xmlns="http://www.w3.org/2000/svg"
-    role="img"
-    aria-label="Download on the App Store"
-  >
-    <rect width="156" height="52" rx="8" fill="#000000"/>
-    <rect x="0.5" y="0.5" width="155" height="51" rx="7.5" stroke="#A6A6A6" strokeWidth="1"/>
-    <path
-      d="M29.3 25.9c0-3.4 2.8-5 2.9-5.1-1.6-2.3-4-2.6-4.9-2.6-2.1-.2-4 1.2-5.1 1.2-1 0-2.7-1.2-4.4-1.2-2.2 0-4.3 1.3-5.5 3.3-2.3 4-.6 10 1.7 13.3 1.1 1.6 2.4 3.4 4.2 3.3 1.7-.1 2.3-1.1 4.3-1.1 2 0 2.6 1.1 4.4 1 1.8 0 2.9-1.6 4-3.2 1.3-1.8 1.8-3.6 1.8-3.7-.1-.1-3.4-1.3-3.4-5.2z"
-      fill="white"
-    />
-    <path
-      d="M26.1 16.7c.9-1.1 1.5-2.7 1.4-4.2-1.3.1-2.9.9-3.9 2-.8 1-1.6 2.6-1.4 4.1 1.5.1 3-.8 3.9-1.9z"
-      fill="white"
-    />
-    <text x="42" y="20" fontFamily="SF Pro Display, -apple-system, Helvetica Neue, Arial, sans-serif" fontSize="10" fontWeight="400" letterSpacing="0.3" fill="white">Download on the</text>
-    <text x="42" y="37" fontFamily="SF Pro Display, -apple-system, Helvetica Neue, Arial, sans-serif" fontSize="20" fontWeight="600" letterSpacing="-0.4" fill="white">App Store</text>
-  </svg>
-);
-
-/** Google Play badge */
-const GooglePlayBadge = () => (
-  <svg
-    width="156"
-    height="52"
-    viewBox="0 0 156 52"
-    fill="none"
-    xmlns="http://www.w3.org/2000/svg"
-    role="img"
-    aria-label="Get it on Google Play"
-  >
-    <rect width="156" height="52" rx="8" fill="#000000"/>
-    <rect x="0.5" y="0.5" width="155" height="51" rx="7.5" stroke="#A6A6A6" strokeWidth="1"/>
-    <path d="M13 14.5L25.5 26L13 37.5V14.5Z" fill="#00D2FF"/>
-    <path d="M13 14.5L25.5 26L19.5 32L13 37.5V14.5Z" fill="#00B8D4"/>
-    <path d="M13 14.5L25.5 26L29.5 22L18 15.7L13 14.5Z" fill="#FF3D00"/>
-    <path d="M13 37.5L25.5 26L29.5 30L18.1 36.3L13 37.5Z" fill="#FFD600"/>
-    <path d="M25.5 26L29.5 22L33 24.2C34.1 24.8 34.1 27.2 33 27.8L29.5 30L25.5 26Z" fill="#00E676"/>
-    <text x="42" y="20" fontFamily="Roboto, Arial, Helvetica, sans-serif" fontSize="9.5" fontWeight="400" letterSpacing="1.2" fill="white">GET IT ON</text>
-    <text x="42" y="37" fontFamily="Roboto, Arial, Helvetica, sans-serif" fontSize="19" fontWeight="500" letterSpacing="-0.2" fill="white">Google Play</text>
-  </svg>
-);
-
 export const DesktopLayout: React.FC<DesktopLayoutProps> = ({
   children,
   activeTab,
@@ -244,38 +195,8 @@ export const DesktopLayout: React.FC<DesktopLayoutProps> = ({
             marginBottom: 32,
             fontFamily: F,
           } as any}>
-            We recommend using the mobile version of the service. Or download our app to scan rooms, estimate your move, and chat with your mover right from your phone.
+            We recommend using the mobile version of the service. Scan the QR code below to open it on your phone.
           </span>
-
-          {/* App Store badge */}
-          <a
-            href="#"
-            style={{
-              display: 'inline-block',
-              marginBottom: 12,
-              textDecoration: 'none',
-              borderRadius: 8,
-              overflow: 'hidden',
-            } as any}
-            aria-label="Download on the App Store"
-          >
-            <AppStoreBadge />
-          </a>
-
-          {/* Google Play badge */}
-          <a
-            href="#"
-            style={{
-              display: 'inline-block',
-              marginBottom: 32,
-              textDecoration: 'none',
-              borderRadius: 8,
-              overflow: 'hidden',
-            } as any}
-            aria-label="Get it on Google Play"
-          >
-            <GooglePlayBadge />
-          </a>
 
           {/* QR section */}
           <div style={{
