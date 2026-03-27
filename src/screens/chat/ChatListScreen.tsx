@@ -206,7 +206,7 @@ export const ChatListScreen: React.FC<ChatListScreenProps> = ({
                     display: 'block',
                     lineHeight: 1.5,
                   } as any}>
-                    Once you book a mover, your{'\n'}chats will appear here
+                    {role === 'mover' ? 'Your client chats will appear here once a job is assigned' : role === 'sales' ? 'Chats with clients and movers will appear here' : 'All team chats will be listed here'}
                   </span>
                 </>
               ) : null}

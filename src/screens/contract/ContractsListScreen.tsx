@@ -29,6 +29,7 @@ interface ContractsListScreenProps {
   onViewContract: (contract: SignedContract) => void;
   onDownloadPdf: (contract: SignedContract) => void;
   onBack: () => void;
+  role?: 'mover' | 'sales' | 'ceo';
 }
 
 /* ═══════════════════════════════════════════
@@ -78,11 +79,18 @@ const fmtDate = (iso: string) => {
    Screen
    ═══════════════════════════════════════════ */
 
+const EMPTY_SUBTITLE: Record<string, string> = {
+  mover: 'Signed contracts with clients will appear here after the move is confirmed',
+  sales: 'Contracts from your closed deals will appear here',
+  ceo: 'All company contracts will be listed here',
+};
+
 export const ContractsListScreen: React.FC<ContractsListScreenProps> = ({
   contracts,
   onViewContract,
   onDownloadPdf,
   onBack,
+  role = 'mover',
 }) => {
   if (Platform.OS !== 'web') return null;
 
@@ -108,7 +116,7 @@ export const ContractsListScreen: React.FC<ContractsListScreenProps> = ({
                     No contracts yet
                   </span>
                   <span style={{ fontFamily: F, fontSize: 14, color: colors.gray[400], display: 'block', marginTop: 4 } as any}>
-                    Contracts will appear here after your mover arrives and you sign the moving agreement
+                    {EMPTY_SUBTITLE[role] || EMPTY_SUBTITLE.mover}
                   </span>
                 </div>
               </div>
