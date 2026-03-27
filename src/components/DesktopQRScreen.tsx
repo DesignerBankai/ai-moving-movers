@@ -7,7 +7,7 @@
  * Compact design — fits within the 390×844 phone frame.
  */
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Platform } from 'react-native';
 import { colors } from '../design-system/tokens/colors';
 
@@ -56,6 +56,16 @@ interface DesktopQRScreenProps {
 }
 
 export const DesktopQRScreen: React.FC<DesktopQRScreenProps> = ({ onBack }) => {
+  const getTime = () => {
+    const n = new Date();
+    return `${n.getHours()}:${String(n.getMinutes()).padStart(2, '0')}`;
+  };
+  const [time, setTime] = useState(getTime);
+  useEffect(() => {
+    const id = setInterval(() => setTime(getTime()), 1000);
+    return () => clearInterval(id);
+  }, []);
+
   if (Platform.OS !== 'web') return null;
 
   return (
@@ -79,7 +89,7 @@ export const DesktopQRScreen: React.FC<DesktopQRScreenProps> = ({ onBack }) => {
         alignItems: 'center',
       } as any}>
         <span style={{ fontSize: 17, fontWeight: 600, color: colors.gray[900] } as any}>
-          {new Date().getHours()}:{String(new Date().getMinutes()).padStart(2, '0')}
+          {time}
         </span>
       </div>
 

@@ -15,7 +15,7 @@
  * - Icons area: height 22px, gap 7px
  */
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, StyleSheet, Platform, Pressable } from 'react-native';
 import { Text } from './Text';
 import { colors } from '../tokens/colors';
@@ -31,10 +31,17 @@ export const StatusBarMock: React.FC<StatusBarMockProps> = ({ variant = 'dark', 
 
   const iconColor = variant === 'light' ? '#FFFFFF' : colors.black;
 
-  const now = new Date();
-  const hours = now.getHours();
-  const minutes = now.getMinutes().toString().padStart(2, '0');
-  const timeString = `${hours}:${minutes}`;
+  const getTimeString = () => {
+    const now = new Date();
+    return `${now.getHours()}:${String(now.getMinutes()).padStart(2, '0')}`;
+  };
+
+  const [timeString, setTimeString] = useState(getTimeString);
+
+  useEffect(() => {
+    const id = setInterval(() => setTimeString(getTimeString()), 1000);
+    return () => clearInterval(id);
+  }, []);
 
   return (
     <View style={styles.container}>
