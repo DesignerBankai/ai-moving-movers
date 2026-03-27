@@ -37,6 +37,8 @@ interface InputProps extends Omit<TextInputProps, 'onChangeText' | 'onFocus' | '
   error?: string;
   hint?: string;
   disabled?: boolean;
+  required?: boolean;
+  rightElement?: React.ReactNode;
   containerStyle?: ViewStyle;
   onChangeText?: (text: string) => void;
   onFocus?: (e: any) => void;
@@ -48,6 +50,8 @@ export const Input: React.FC<InputProps> = ({
   error,
   hint,
   disabled = false,
+  required = false,
+  rightElement,
   containerStyle,
   style,
   value,
@@ -120,7 +124,7 @@ export const Input: React.FC<InputProps> = ({
                 whiteSpace: 'nowrap',
               } as any}
             >
-              {label}
+              {label}{required && <span style={{ color: colors.error[500], marginLeft: 2 } as any}>*</span>}
             </span>
           )}
 
@@ -128,8 +132,8 @@ export const Input: React.FC<InputProps> = ({
           <div
             style={{
               display: 'flex',
-              flexDirection: 'column',
-              justifyContent: 'center',
+              flexDirection: 'row',
+              alignItems: 'center',
               paddingTop: label && isActive ? 14 : 0,
               transition: 'padding-top 200ms cubic-bezier(0.4, 0, 0.2, 1)',
             } as any}
@@ -158,7 +162,7 @@ export const Input: React.FC<InputProps> = ({
                 onBlur?.(e);
               }}
               style={{
-                width: '100%',
+                flex: 1,
                 fontFamily: 'Inter, system-ui, sans-serif',
                 fontSize: 16,
                 lineHeight: '19px',
@@ -171,6 +175,11 @@ export const Input: React.FC<InputProps> = ({
                 height: 19,
               } as any}
             />
+            {rightElement && (
+              <div style={{ marginLeft: 8, display: 'flex', alignItems: 'center', flexShrink: 0 } as any}>
+                {rightElement}
+              </div>
+            )}
           </div>
         </div>
 
@@ -215,10 +224,11 @@ export const Input: React.FC<InputProps> = ({
       >
         {showFloatingLabel && (
           <Text style={styles.floatingLabel}>
-            {label}
+            {label}{required ? <Text style={{ color: colors.error[500] }}> *</Text> : null}
           </Text>
         )}
 
+        <View style={{ flexDirection: 'row', alignItems: 'center', width: '100%' }}>
         <TextInput
           style={[
             styles.input,
@@ -249,6 +259,8 @@ export const Input: React.FC<InputProps> = ({
           }}
           {...rest}
         />
+        {rightElement && <View style={{ marginLeft: 8 }}>{rightElement}</View>}
+        </View>
       </View>
 
       {error && (
@@ -302,7 +314,7 @@ const styles = StyleSheet.create({
 
   // Input text: Inter 16px Regular, line-height 120%, color #212225
   input: {
-    width: '100%',
+    flex: 1,
     fontFamily: fontFamily.primary,
     fontSize: 16,
     lineHeight: 19,
